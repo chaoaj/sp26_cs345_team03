@@ -80,6 +80,9 @@ function draw() {
     drawSubScreenPanel();
     drawQuitScreen();
   }
+  else if (gameState === "playing") {
+    background
+  }
 }
 
 function drawFantasyBackground() {
