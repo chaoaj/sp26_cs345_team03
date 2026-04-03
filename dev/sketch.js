@@ -10,7 +10,7 @@ let stars = [];
 let particles = [];
 
 function setup() {
-  createCanvas(600, 600);
+  createCanvas(960, 540);
 
   for (let i = 0; i < 80; i++) {
     stars.push({
@@ -33,17 +33,17 @@ function setup() {
     });
   }
 
-  startButton = createMainMenuButton("Start", 40, 338, function() {
+  startButton = createMainMenuButton("Start", 40, 280, function() {
     gameState = "start";
     updateUI();
   });
 
-  settingsButton = createMainMenuButton("Settings", 40, 412, function() {
+  settingsButton = createMainMenuButton("Settings", 40, 354, function() {
     gameState = "settings";
     updateUI();
   });
 
-  quitButton = createMainMenuButton("Quit", 40, 486, function() {
+  quitButton = createMainMenuButton("Quit", 40, 428, function() {
     gameState = "quit";
     updateUI();
   });
@@ -58,7 +58,7 @@ function setup() {
   });
 
   volumeSlider = createSlider(0, 100, 50);
-  volumeSlider.position(215, 305);
+  volumeSlider.position(385, 300);
   volumeSlider.size(190);
 
   updateUI();
@@ -186,7 +186,8 @@ function drawCastleSilhouette() {
 
   rect(12, 160, 34, 80, 12);
 
-  fill(255, 210, 120, 30);
+  // Castle lighting
+  fill(255, 210, 50, 30);
   rect(-18, 120, 10, 16);
   rect(60, 110, 10, 16);
   rect(82, 118, 10, 16);
@@ -239,14 +240,14 @@ function drawForegroundVignette() {
 
 function drawMenuPanel() {
   fill(7, 8, 12, 158);
-  rect(20, 24, 248, 550, 14);
+  rect(20, 24, 358, 500, 14);
 
   fill(255, 255, 255, 10);
-  rect(24, 28, 240, 542, 12);
+  rect(24, 28, 350, 492, 12);
 
   stroke(190, 195, 225, 34);
   noFill();
-  rect(28, 32, 232, 534, 12);
+  rect(28, 32, 342, 484, 12);
 
   stroke(255, 255, 255, 10);
   line(40, 284, 230, 284);
@@ -255,14 +256,14 @@ function drawMenuPanel() {
 
 function drawSubScreenPanel() {
   fill(7, 8, 12, 168);
-  rect(25, 25, 550, 550, 14);
+  rect(210, 25, 550, 490, 14);
 
   fill(255, 255, 255, 10);
-  rect(30, 30, 540, 540, 12);
+  rect(215, 30, 540, 482, 12);
 
   stroke(190, 195, 225, 30);
   noFill();
-  rect(34, 34, 532, 532, 12);
+  rect(220, 34, 532, 474, 12);
   noStroke();
 }
 
@@ -284,8 +285,8 @@ function drawTitle() {
   fill(205, 205, 216);
   textStyle(NORMAL);
   textSize(15);
-  text("and was put in a coma by a", 43, 184);
-  text("demon sleep god", 43, 205);
+  text("and Was Put in a Coma by a", 50, 160);
+  text("Demon Sleep God", 53, 180);
 }
 
 function createMainMenuButton(label, x, y, action) {
@@ -344,6 +345,9 @@ function updateUI() {
 }
 
 function drawStartScreen() {
+  
+  
+  
   fill(244, 244, 248);
   textAlign(CENTER, CENTER);
   textFont("Georgia");
