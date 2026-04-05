@@ -8,6 +8,8 @@ let volumeSlider;
 
 let stars = [];
 let particles = [];
+let poemLines;
+let frames = 0;
 
 function setup() {
   createCanvas(960, 540);
@@ -64,7 +66,20 @@ function setup() {
   updateUI();
 }
 
+function preload() {
+
+  poemLines = loadStrings("/data/intro_poem.txt");
+  
+
+}
+
 function draw() {
+  frames++;
+  if (frames > 9) {
+
+    frames = 0;
+
+  }
   drawFantasyBackground();
 
   if (gameState === "menu") {
@@ -353,14 +368,49 @@ function drawStartScreen() {
   textFont("Georgia");
   textStyle(BOLD);
   textSize(34);
-  text("The Dream Begins", width / 2, 170);
+  //text("The Dream Begins", width / 2, 100);
 
   textStyle(NORMAL);
   textSize(20);
   fill(214, 214, 226);
-  text("You wake up with no memory.", width / 2, 250);
+  /*text("You wake up with no memory.", width / 2, 250);
   text("The world feels wrong.", width / 2, 286);
-  text("Something ancient is keeping you asleep.", width / 2, 322);
+  text("Something ancient is keeping you asleep.", width / 2, 322);*/
+  textHeight = 100;
+  textSize(20);
+  lineLength = 50;
+  for (let x of poemLines) {
+    
+    textHeight = printLongLine(x, width / 2, textHeight, lineLength, 25);
+    /*if (currLine.length > lineLength) {
+      stringStart = 0;
+      for (stringStart = 0; stringStart < currLine.length - lineLength; stringStart += lineLength) {
+
+        text(currLine.substring(stringStart, stringStart + lineLength), width / 2, textHeight)
+        textHeight += 22
+
+      }
+      if (currLine.length > stringStart) {
+
+        text(currLine.substring(stringStart), width / 2, textHeight)
+        textHeight += 40;  
+
+      } else {
+
+        text(textHeight, width / 2, textHeight)
+        textHeight += 18;
+
+      }
+      
+
+    } else {
+
+      text(x, width / 2, textHeight);
+      textHeight += 40;
+
+    }*/
+
+  }
 }
 
 function drawSettingsScreen() {
