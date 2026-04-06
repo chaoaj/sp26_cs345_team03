@@ -129,8 +129,8 @@ function setup() {
 
 function preload() {
 
-  poemLines = loadStrings("/data/intro_poem.txt");
-  
+  poemLines = loadStrings("./libraries/data/intro_poem.txt");
+
 
 }
 
@@ -551,7 +551,7 @@ function drawPoemScreen() {
   textSize(15);
   lineLength = 60;
   for (let x of poemLines) {
-    
+
     textHeight = printByWord(x, width / 2, textHeight, lineLength, 15);
     textHeight += 10;
 
