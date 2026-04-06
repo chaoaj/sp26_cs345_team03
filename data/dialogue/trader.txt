@@ -1,0 +1,54 @@
+*20
+Trader: Wooaah Mister, that's some mighty fine {gear/apparel} you got there!
+Trader: If you're feeling tired lugging it around all the time, i'd be happy to buy it off you...
+Player: [<Sorry, not for sale>|<I guess it can be a lot to carry...>]
+7
+21
+Trader: Eh, figured as much. Doesn't seem like the type of thing that someone wears for the fun of it after all, heh.
+Player: Who are you?
+Trader Pescae: My names Pescae, I'm in the trade of trading. I like to give people a little piece of the world they've never seen, and free them of a little piece of themselves in exchange.
+Player: [<Little wordy for a slogan, but I like it>|<The little pieces of themselves they don't want?>]
+13
+15
+Trader: Thanks! Gets some of the more suspicious off my back at least. Most people don't get that i'm more interested in getting something valuable than selling something cheap.
+18
+Trader: ...
+Trader: The little pieces of themselves they can't carry.
+Player: ...
+Trader: Anywho, what's a rarity like you doing in this hole in the wall town?
+///TO DO\\\
+//Dialogue path for "I guess it can be a lot to carry..."
+Trader: I bet it is! Looks like it's been through a lot too. I'd deduce you could use a vacation.
+Trader: Listen, I'll be frank with you. I already sold all my foreign wares to the people here in town, and I don't think you'd have much interest in what they're selling me.
+Trader: Even if you had a strange eye for straw bales and poor tempered chickens, I already have a delivery contract with the people in the town next on my list, so I got nothing to sell that you could hold.
+Trader: On the other hand, I do have my cart, and I got connections. In exchange for your {armor and shield/robe}, I can give you a trip wherever you want, free of charge, and free food and bedding wherever that is.
+Trader: Whaddaya say?
+Player: Where is there to go?
+Trader: Ah, never really stretched your legs out in the big world?
+Trader: Well, to start, out to the west there's the Hushed Temple, a marble city in the cliffs home to the monks of the Numbed Mind
+Trader: They say the deafening sound of the waterfalls mutes your internal troubles, and the mist purifies the stress in your body
+Trader: It also acts as the gateway to the Heaven Graspers, mountains so tall that you'll forget your earthly troubles entirely in your ascent into the clouds
+Trader: They say that there's some sort of god or spirit at the peak, one who paints the clouds in the sky and sows beauty into the details of the earth
+Trader: They say that if you meet her, she can paint a perfect life over your eyes, and grant you eternal happiness
+Player: [<Sounds nice, honestly. I'll go with.>|<Sorry, I have business here>]
+36
+///TO DO\\\
+Trader: I knew you'd come around! I'm actually heading off now. Here, let me help pack your things.
+Narrator: As you pass over your {sword/cloak}, he freezes as he grabs hold of it.
+Narrator: His grip is tight, you can see the white in his knuckles. His constant, easy smile starts to flicker, then slowly drops completely.
+Trader: This village really is in trouble you know, with the goblins coming and all.
+Player: I know, I hope they're able to manage. There's some nice people here.
+Narrator: His voice becomes monotone, his face still and uncaring.
+Trader: Maybe you should stay, after all.
+Narrator: He speaks completely devoid of emotion
+Player: I don't think I can help them
+Trader: You need to stay.
+Player: I don't even know how to fight, i'm just not the right person for this
+Trader: You need to stay.
+Player: I can't do it, I don't know how to, I'm too afraid, I'm sorry
+Trader: You need to stay.
+Player: I can't, I'm sorry
+;-
+Screen flashes black, words flash in black and white on the screen: "YOU CAN'T RUN FOREVER, FACE YOUR FEARS"
+-;
+Trader: Well, that's very righteous of you, staying to fight. I suppose it's not like the land is going anywhere, so you can tag along after this is all over, Mr Hero.
