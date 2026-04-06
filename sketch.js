@@ -120,7 +120,7 @@ function setup() {
   });
 
   volumeSlider = createSlider(0, 100, 50);
-  volumeSlider.position(425, 300);
+  volumeSlider.position(width / 2 - 190/2, 300);
   volumeSlider.size(190);
 
   layoutMenuButtons();
@@ -600,15 +600,15 @@ function drawSettingsScreen() {
   textFont("Georgia");
   textStyle(BOLD);
   textSize(34);
-  text("Settings", width / 2 + 35, 170);
+  text("Settings", width / 2, 170);
 
   textStyle(NORMAL);
   textSize(22);
   fill(214, 214, 226);
-  text("Volume", width / 2 + 35, 270);
+  text("Volume", width / 2, 270);
 
   textSize(18);
-  text("Current: " + volumeSlider.value(), width / 2 + 35, 350);
+  text("Current: " + volumeSlider.value(), width / 2, 350);
 }
 
 function drawQuitScreen() {
