@@ -79,7 +79,9 @@ function setup() {
     updateUI();
   });
 
-  mageButton = createMainMenuButton("Mage", 410, 245, function() {
+  let classButtonX = width / 2 - 100;
+
+  mageButton = createMainMenuButton("Mage", classButtonX, 245, function() {
     selectedClass = "Mage";
     initIntroLevel();
     gameState = "introLevel";
@@ -87,7 +89,7 @@ function setup() {
   });
   mageButton.size(200, 62);
 
-  meleeButton = createMainMenuButton("Melee", 410, 325, function() {
+  meleeButton = createMainMenuButton("Melee", classButtonX, 325, function() {
     selectedClass = "Melee";
     initIntroLevel();
     gameState = "introLevel";
@@ -365,7 +367,7 @@ function drawMenuDecoration(x, y, w, h) {
 function drawSubScreenPanel() {
   let panelW = 590;
   let panelH = 470;
-  let panelX = width * 0.5 - panelW * 0.5 + 70;
+  let panelX = width * 0.5 - panelW * 0.5;
   let panelY = 34;
 
   fill(7, 8, 12, 176);
@@ -520,13 +522,13 @@ function drawClassSelectScreen() {
   textFont("Georgia");
   textStyle(BOLD);
   textSize(34);
-  text("Select a Class", width / 2 + 35, 160);
+  text("Select a Class", width / 2, 160);
 
   textStyle(NORMAL);
   textSize(18);
   fill(214, 214, 226);
-  text("Mage uses spell power and ranged magic.", width / 2 + 35, 410);
-  text("Melee focuses on close combat and raw strength.", width / 2 + 35, 440);
+  text("Mage uses spell power and ranged magic.", width / 2, 410);
+  text("Melee focuses on close combat and raw strength.", width / 2, 440);
 }
 
 function drawSettingsScreen() {
