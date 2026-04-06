@@ -6,12 +6,15 @@ let settingsButton;
 let quitButton;
 let backButton;
 let volumeSlider;
+let mouseReleased = false;
 
 let mageButton;
 let meleeButton;
 
 let stars = [];
 let particles = [];
+let poemLines;
+let frames = 0;
 let fireflies = [];
 
 // main menu panel
@@ -65,7 +68,7 @@ function setup() {
   }
 
   startButton = createMainMenuButton("Start", 0, 0, function() {
-    gameState = "classSelect";
+    gameState = "poem";
     updateUI();
   });
 
@@ -102,8 +105,12 @@ function setup() {
   backButton.position(26, 22);
   styleSecondaryButton(backButton);
   backButton.mousePressed(function() {
-    if (gameState === "settings" || gameState === "quit" || gameState === "classSelect") {
+    if (gameState === "settings" || gameState === "quit" || gameState === "poem") {
+      mouseReleased = false;
       gameState = "menu";
+    } else if (gameState === "classSelect") {
+      mouseReleased = false;
+      gameState = "poem";
     } else if (gameState === "introLevel") {
       gameState = "classSelect";
     } else {
@@ -120,12 +127,28 @@ function setup() {
   updateUI();
 }
 
+function preload() {
+
+  poemLines = loadStrings("/data/intro_poem.txt");
+  
+
+}
+
 function draw() {
+
+  frames++;
+  if (frames > 9) {
+
+    frames = 0;
+
+  }
   drawFantasyBackground();
 
   if (gameState === "menu") {
     drawMenuPanel();
     drawTitle();
+  } else if (gameState === "poem") {
+    drawPoemScreen();
   } else if (gameState === "classSelect") {
     drawClassSelectScreen();
   } else if (gameState === "introLevel") {
@@ -500,6 +523,8 @@ function updateUI() {
     startButton.show();
     settingsButton.show();
     quitButton.show();
+  } else if (gameState === "poem") {
+    backButton.show();
   } else if (gameState === "classSelect") {
     backButton.show();
     mageButton.show();
@@ -512,6 +537,42 @@ function updateUI() {
   } else if (gameState === "quit") {
     backButton.show();
   }
+}
+
+function drawPoemScreen() {
+
+  drawSubScreenPanel();
+
+  fill(244, 244, 248);
+  textAlign(CENTER, CENTER);
+  textFont("Georgia");
+  textStyle(BOLD);
+  textHeight = 70;
+  textSize(15);
+  lineLength = 60;
+  for (let x of poemLines) {
+    
+    textHeight = printByWord(x, width / 2, textHeight, lineLength, 15);
+    textHeight += 10;
+
+  }
+  fill(100, 100, 100);
+  text("Click to continue", width / 2, height - 60)
+  if (mouseIsPressed) {
+
+    if (mouseReleased) {
+
+      gameState = "classSelect";
+      updateUI();
+
+    }
+
+  } else {
+
+    mouseReleased = true;
+
+  }
+
 }
 
 function drawClassSelectScreen() {

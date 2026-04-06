@@ -381,34 +381,8 @@ function drawStartScreen() {
   lineLength = 50;
   for (let x of poemLines) {
     
-    textHeight = printLongLine(x, width / 2, textHeight, lineLength, 25);
-    /*if (currLine.length > lineLength) {
-      stringStart = 0;
-      for (stringStart = 0; stringStart < currLine.length - lineLength; stringStart += lineLength) {
-
-        text(currLine.substring(stringStart, stringStart + lineLength), width / 2, textHeight)
-        textHeight += 22
-
-      }
-      if (currLine.length > stringStart) {
-
-        text(currLine.substring(stringStart), width / 2, textHeight)
-        textHeight += 40;  
-
-      } else {
-
-        text(textHeight, width / 2, textHeight)
-        textHeight += 18;
-
-      }
-      
-
-    } else {
-
-      text(x, width / 2, textHeight);
-      textHeight += 40;
-
-    }*/
+    textHeight = printByWord(x, width / 2, textHeight, lineLength, 25);
+    textHeight += 15;
 
   }
 }

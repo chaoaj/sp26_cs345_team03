@@ -35,18 +35,25 @@ function printByWord(lineText, x, y, maxLength, textSpace) {
 
         for (word of words) {
 
-                currLine += word + " ";
-                charCount += word.length + 1;
-                if (charCount > maxLength) {
+            currLine += word + " ";
+            charCount += word.length + 1;
+            if (charCount > maxLength) {
 
-                    text(currLine, x, textY);
-                    textY += textSpace;
-                    currLine = "";
-                    charCount = 0;
-
-                }
+                text(currLine, x, textY);
+                textY += textSpace;
+                currLine = "";
+                charCount = 0;
 
             }
+
+        }
+        if (currLine !== "") {
+
+            text(currLine, x, textY)
+            textY += textSpace;
+
+        }
+        
 
     } else {
 
