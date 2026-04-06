@@ -35,7 +35,7 @@ let introPrompt = "";
 let introObjective = "";
 
 function setup() {
-  createCanvas(960, 540);
+  createCanvas(windowWidth, windowHeight);
 
   for (let i = 0; i < 80; i++) {
     stars.push({
