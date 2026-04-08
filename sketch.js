@@ -34,6 +34,32 @@ let introDialogue = "";
 let introPrompt = "";
 let introObjective = "";
 
+// player
+let spriteSheet;
+let playerX = 200;
+let playerY;
+let groundY;
+let velY = 0;
+let facingLeft = false;
+let currentFrame = 0;
+let moveFrameIndex = 0;
+let animTimer = 0;
+let onGround = false;
+
+const frameWidth = 320;
+const frameHeight = 320;
+const drawSize = 80;
+const gravity = 0.6;
+const jumpForce = -14;
+
+// attacks
+let atkLightSheet;
+let atkHeavySheet;
+let attackType = "";   // "", "light", "heavy"
+let attackFrame = 0;
+let attackTimer = 0;
+const attackFrameSpeed = 5; // draw frames per sprite frame
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
@@ -163,6 +189,18 @@ function draw() {
 function keyPressed() {
   if (gameState !== "introLevel") return;
 
+  if ((key === 'w' || key === 'W') && onGround) {
+    velY = jumpForce;
+    return;
+  }
+
+  if ((key === 'q' || key === 'Q') && attackType === "") {
+    attackType = "heavy";
+    attackFrame = 0;
+    attackTimer = 0;
+    return;
+  }
+
   if (key === ' ' || keyCode === ENTER) {
     if (introStage < 4) {
       introStage++;
@@ -177,6 +215,33 @@ function initIntroLevel() {
   introDialogue = "Placeholder intro text.";
   introPrompt = "SPACE";
   introObjective = "Begin";
+
+  // init player
+  groundY = 440 - drawSize;
+  playerX = 200;
+  playerY = groundY;
+  velY = 0;
+  onGround = false;
+  currentFrame = 0;
+  moveFrameIndex = 0;
+  animTimer = 0;
+
+  let spritePath = selectedClass === "Mage"
+    ? "sprites/sprint2/mage_class_320x320.png"
+    : "sprites/sprint2/melee_class_320x320.png";
+  spriteSheet = loadImage(spritePath);
+
+  if (selectedClass === "Melee") {
+    atkLightSheet = loadImage("sprites/sprint2/melee_attack_320x160.png");
+    atkHeavySheet = loadImage("sprites/sprint2/heavy_melee_atk_320x320.png");
+  } else {
+    atkLightSheet = loadImage("sprites/sprint2/light_spell_atk_320x320.png");
+    atkHeavySheet = loadImage("sprites/sprint2/heavy_spell_atk_320x320.png");
+  }
+
+  attackType = "";
+  attackFrame = 0;
+  attackTimer = 0;
 }
 
 function drawFantasyBackground() {
@@ -630,9 +695,128 @@ function drawQuitScreen() {
 
 function drawIntroLevelScreen() {
   updateIntroLevel();
+  updatePlayer();
   drawIntroWorld();
+  drawPlayer();
   drawIntroTopUI();
   drawIntroDialogueBox();
+}
+
+function updatePlayer() {
+  let moving = false;
+  if (keyIsDown(68)) { playerX += 5; moving = true; facingLeft = false; } // D
+  if (keyIsDown(65)) { playerX -= 5; moving = true; facingLeft = true; }  // A
+
+  // clamp to world bounds (no walking off-screen)
+  playerX = constrain(playerX, 0, worldWidth - drawSize);
+
+  velY += gravity;
+  playerY += velY;
+
+  if (playerY >= groundY) {
+    playerY = groundY;
+    velY = 0;
+    onGround = true;
+  } else {
+    onGround = false;
+  }
+
+  if (!onGround) {
+    currentFrame = 1;
+  } else if (moving) {
+    animTimer++;
+    if (animTimer % 8 === 0) moveFrameIndex = (moveFrameIndex + 1) % 3;
+    currentFrame = 2 + moveFrameIndex;
+  } else {
+    currentFrame = 0;
+    moveFrameIndex = 0;
+    animTimer = 0;
+  }
+
+  // camera follows player, clamped to world
+  cameraX = constrain(playerX - width / 2, 0, worldWidth - width);
+
+  // advance attack animation
+  if (attackType !== "") {
+    attackTimer++;
+    if (attackTimer % attackFrameSpeed === 0) {
+      attackFrame++;
+      if (attackFrame >= getAtkInfo(attackType).frames) {
+        attackType = "";
+        attackFrame = 0;
+        attackTimer = 0;
+      }
+    }
+  }
+}
+
+// returns { frames, srcH, drawW, drawH } for current class + attack type
+function getAtkInfo(type) {
+  if (selectedClass === "Melee") {
+    if (type === "light") return { frames: 4, srcH: 160, drawW: 160, drawH: 80  };
+    else                  return { frames: 5, srcH: 320, drawW: 160, drawH: 160 };
+  } else {
+    if (type === "light") return { frames: 3, srcH: 320, drawW: 120, drawH: 120 };
+    else                  return { frames: 3, srcH: 320, drawW: 160, drawH: 160 };
+  }
+}
+
+function drawPlayer() {
+  if (!spriteSheet) return;
+
+  let screenX = playerX - cameraX;
+  let sx = currentFrame * frameWidth;
+
+  push();
+  if (facingLeft) {
+    translate(screenX + drawSize, playerY);
+    scale(-1, 1);
+    image(spriteSheet, 0, 0, drawSize, drawSize, sx, 0, frameWidth, frameHeight);
+  } else {
+    image(spriteSheet, screenX, playerY, drawSize, drawSize, sx, 0, frameWidth, frameHeight);
+  }
+  pop();
+
+  drawAttack();
+}
+
+function drawAttack() {
+  if (attackType === "" || !atkLightSheet || !atkHeavySheet) return;
+
+  let info = getAtkInfo(attackType);
+  let sheet = attackType === "light" ? atkLightSheet : atkHeavySheet;
+  let screenX = playerX - cameraX;
+  let sx = attackFrame * frameWidth;
+
+  // center effect vertically on the player, push it in front
+  let effW = info.drawW;
+  let effH = info.drawH;
+  let effY = playerY + drawSize / 2 - effH / 2;
+
+  // melee overlaps the player body; mage pushes clearly in front for a casting feel
+  let xOff = selectedClass === "Mage" ? drawSize + 20 : drawSize * 0.4;
+
+  push();
+  if (facingLeft) {
+    // mirror xOff to the left: translate to the right edge of the effect then flip
+    translate(screenX - xOff + effW, effY);
+    scale(-1, 1);
+    image(sheet, 0, 0, effW, effH, sx, 0, frameWidth, info.srcH);
+  } else {
+    image(sheet, screenX + xOff, effY, effW, effH, sx, 0, frameWidth, info.srcH);
+  }
+  pop();
+}
+
+function mousePressed() {
+  if (gameState !== "introLevel") return;
+  // ignore clicks on the back button area (top-left)
+  if (mouseX < 140 && mouseY < 70) return;
+  if (attackType === "") {
+    attackType = "light";
+    attackFrame = 0;
+    attackTimer = 0;
+  }
 }
 
 function updateIntroLevel() {
