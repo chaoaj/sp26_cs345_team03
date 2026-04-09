@@ -11,6 +11,13 @@ let mouseReleased = false;
 let mageButton;
 let meleeButton;
 
+let HP;
+let maxHP;
+let magic;
+let maxMagic;
+let stamina;
+let maxStamina;
+
 let stars = [];
 let particles = [];
 let poemLines;
@@ -114,6 +121,7 @@ function setup() {
     selectedClass = "Mage";
     initIntroLevel();
     gameState = "introLevel";
+    mouseReleased = false;
     updateUI();
   });
   mageButton.size(200, 62);
@@ -122,6 +130,7 @@ function setup() {
     selectedClass = "Melee";
     initIntroLevel();
     gameState = "introLevel";
+    mouseReleased = false;
     updateUI();
   });
   meleeButton.size(200, 62);
@@ -198,6 +207,12 @@ function keyPressed() {
     attackType = "heavy";
     attackFrame = 0;
     attackTimer = 0;
+
+    if (selectedClass === "Mage") {
+      magic = max(0, magic - 18);
+    } else {
+      stamina = max(0, stamina - 18);
+    }
     return;
   }
 
@@ -211,6 +226,13 @@ function keyPressed() {
 function initIntroLevel() {
   introStage = 0;
   cameraX = 0;
+
+  HP = 100;
+  maxHP = 100;
+  magic = 100;
+  maxMagic = 100;
+  stamina = 100;
+  maxStamina = 100;
 
   introDialogue = "Placeholder intro text.";
   introPrompt = "SPACE";
@@ -242,6 +264,39 @@ function initIntroLevel() {
   attackType = "";
   attackFrame = 0;
   attackTimer = 0;
+}
+
+function drawHUD() {
+  let x = 22;
+  let y = 76; 
+
+  drawBar(x, y, 180, 14, HP, maxHP, color(0, 64, 0), "HP");
+
+  if (selectedClass === "Mage") {
+    drawBar(x, y + 26, 180, 14, magic, maxMagic, color(0, 0, 80), "MP");
+  } else {
+    drawBar(x, y + 26, 180, 14, stamina, maxStamina, color(253, 216, 10), "ST");
+  }
+}
+
+function drawBar(x, y, w, h, val, maxVal, col, label) {
+  let fill_w = (val / maxVal) * w;
+
+  fill(10, 12, 18, 200);
+  noStroke();
+  rect(x, y, w, h, 4);
+
+  fill(col);
+  rect(x, y, fill_w, h, 4);
+
+  fill(255, 255, 255, 22);
+  rect(x, y, fill_w, h / 2, 4);
+
+  fill(220, 220, 230);
+  textFont("Georgia");
+  textSize(12);
+  textAlign(LEFT, CENTER);
+  text(label, x + w + 8, y + h / 2);
 }
 
 function drawFantasyBackground() {
@@ -694,11 +749,16 @@ function drawQuitScreen() {
 }
 
 function drawIntroLevelScreen() {
+  if (!mouseIsPressed) {
+    mouseReleased = true;
+  }
+
   updateIntroLevel();
   updatePlayer();
   drawIntroWorld();
   drawPlayer();
   drawIntroTopUI();
+  drawHUD();
   drawIntroDialogueBox();
 }
 
@@ -812,10 +872,17 @@ function mousePressed() {
   if (gameState !== "introLevel") return;
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;
+  if (!mouseReleased) return;
   if (attackType === "") {
     attackType = "light";
     attackFrame = 0;
     attackTimer = 0;
+  
+    if (selectedClass == "Mage") {
+      magic = max(0, magic - 9);
+    } else {
+      stamina = max(0, stamina - 9);
+    }
   }
 }
 
