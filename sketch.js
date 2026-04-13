@@ -219,9 +219,13 @@ function keyPressed() {
   }
 
   if ((key === 'q' || key === 'Q') && attackType === "") {
+    if (magic <= 0 || stamina <= 0) {
+      return;
+    }
     attackType = "heavy";
     attackFrame = 0;
     attackTimer = 0;
+    
 
     if (selectedClass === "Mage") {
       magic = max(0, magic - 18);
@@ -893,6 +897,9 @@ function mousePressed() {
   // ignore clicks where the Level 1 (dev) button sits (below objective panel)
   if (mouseX > width - 200 && mouseY > 88 && mouseY < 148) return;
   if (!mouseReleased) return;
+  if (stamina <= 0 || magic <= 0) {
+    return;
+  }
   if (attackType === "") {
     attackType = "light";
     attackFrame = 0;
