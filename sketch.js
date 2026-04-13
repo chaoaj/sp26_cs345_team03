@@ -8,6 +8,11 @@ let backButton;
 let level1DevButton;
 let volumeSlider;
 let mouseReleased = false;
+//-1 means not waiting, 0 means waiting with no click
+//1 means something is waiting and the mouse has been clicked
+let entityWaitingForMouse = -1;
+
+let isDialogue = false;
 
 let mageButton;
 let meleeButton;
@@ -208,6 +213,17 @@ function draw() {
   } else if (gameState === "quit") {
     drawQuitScreen();
   }
+  if (entityWaitingForMouse == 0 && mouseIsPressed) {
+    entityWaitingForMouse = 1;
+  }
+  frameCalls();
+  /*if (isDialogue) {
+    textHeight = (height * 4) / 5
+    textSize(20)
+    textAlign(LEFT, CENTER);
+    printByWord(dialogue.getText(), 100, textHeight, 25, 25)
+
+  }*/
 }
 
 function keyPressed() {
@@ -257,6 +273,9 @@ function initIntroLevel() {
   introPrompt = "SPACE";
   introObjective = "Begin";
 
+  //init test dialogue
+  dialogue = new Dialogue("This is test dialogue. This should print on the screen letter by letter if it is working.")
+  isDialogue = true;
   // init player
   groundY = 440 - drawSize;
   playerX = 200;
@@ -1192,7 +1211,11 @@ function drawIntroDialogueBox() {
 
   fill(214, 214, 226);
   textSize(15);
-  text(introDialogue, boxX + 18, boxY + 40, boxW - 150, 60);
+  if (isDialogue) {
+    textAlign(LEFT, TOP);
+    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 100, 18)
+  }
+  //text(introDialogue, boxX + 18, boxY + 40, boxW - 150, 60);
 
   if (introPrompt !== "") {
     textAlign(RIGHT, BOTTOM);
