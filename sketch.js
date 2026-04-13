@@ -1224,3 +1224,44 @@ function drawIntroDialogueBox() {
     text(introPrompt, boxX + boxW - 18, boxY + boxH - 14);
   }
 }
+
+function printByWord(lineText, x, y, maxLength, textSpace) {
+
+    words = lineText.split(" ")
+    textY = y;
+    charCount = 0;
+    currLine = "";
+    if (lineText.length > maxLength) {
+
+        for (word of words) {
+
+            currLine += word + " ";
+            charCount += word.length + 1;
+            if (charCount > maxLength) {
+
+                text(currLine, x, textY);
+                textY += textSpace;
+                currLine = "";
+                charCount = 0;
+
+            }
+
+        }
+        if (currLine !== "") {
+
+            text(currLine, x, textY)
+            textY += textSpace;
+
+        }
+        
+
+    } else {
+
+        text(lineText, x, textY);
+        textY += textSpace;
+
+    }
+    
+    return textY;
+
+}
