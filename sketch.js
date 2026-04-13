@@ -204,9 +204,13 @@ function keyPressed() {
   }
 
   if ((key === 'q' || key === 'Q') && attackType === "") {
+    if (magic <= 0 || stamina <= 0) {
+      return;
+    }
     attackType = "heavy";
     attackFrame = 0;
     attackTimer = 0;
+    
 
     if (selectedClass === "Mage") {
       magic = max(0, magic - 18);
@@ -873,6 +877,9 @@ function mousePressed() {
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;
   if (!mouseReleased) return;
+  if (stamina <= 0 || magic <= 0) {
+    return;
+  }
   if (attackType === "") {
     attackType = "light";
     attackFrame = 0;
