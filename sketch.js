@@ -217,13 +217,6 @@ function draw() {
     entityWaitingForMouse = 1;
   }
   frameCalls();
-  /*if (isDialogue) {
-    textHeight = (height * 4) / 5
-    textSize(20)
-    textAlign(LEFT, CENTER);
-    printByWord(dialogue.getText(), 100, textHeight, 25, 25)
-
-  }*/
 }
 
 function keyPressed() {
@@ -1192,9 +1185,9 @@ function drawIntroTopUI() {
 }
 
 function drawIntroDialogueBox() {
-  let boxX = 22;
+  let boxX = width / 4;
   let boxY = height - 122;
-  let boxW = width - 44;
+  let boxW = width / 2;
   let boxH = 96;
 
   fill(9, 11, 18, 210);
