@@ -5,6 +5,7 @@ let startButton;
 let settingsButton;
 let quitButton;
 let backButton;
+let level1DevButton;
 let volumeSlider;
 let mouseReleased = false;
 
@@ -153,6 +154,20 @@ function setup() {
     }
     updateUI();
   });
+
+  // TEMP: open standalone Level 1 prototype in a new tab (remove when merged into main sketch)
+  level1DevButton = createButton("Level 1 (dev)");
+  level1DevButton.size(168, 38);
+  level1DevButton.position(width - 184, 98);
+  styleSecondaryButton(level1DevButton);
+  level1DevButton.mousePressed(function() {
+    let path = window.location.pathname.indexOf("dev/index.html") >= 0
+      ? "levels/your_level.html"
+      : "dev/levels/your_level.html";
+    let classParam = selectedClass === "Mage" ? "Mage" : "Melee";
+    window.open(path + "?class=" + encodeURIComponent(classParam), "_blank", "noopener,noreferrer");
+  });
+  level1DevButton.hide();
 
   volumeSlider = createSlider(0, 100, 50);
   volumeSlider.position(width / 2 - 190/2, 300);
@@ -635,6 +650,7 @@ function updateUI() {
   settingsButton.hide();
   quitButton.hide();
   backButton.hide();
+  level1DevButton.hide();
   volumeSlider.hide();
   mageButton.hide();
   meleeButton.hide();
@@ -651,6 +667,8 @@ function updateUI() {
     meleeButton.show();
   } else if (gameState === "introLevel") {
     backButton.show();
+    level1DevButton.show();
+    level1DevButton.position(width - 184, 98);
   } else if (gameState === "settings") {
     backButton.show();
     volumeSlider.show();
@@ -872,6 +890,8 @@ function mousePressed() {
   if (gameState !== "introLevel") return;
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;
+  // ignore clicks where the Level 1 (dev) button sits (below objective panel)
+  if (mouseX > width - 200 && mouseY > 88 && mouseY < 148) return;
   if (!mouseReleased) return;
   if (attackType === "") {
     attackType = "light";
