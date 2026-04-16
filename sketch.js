@@ -17,6 +17,12 @@ let isDialogue = false;
 let mageButton;
 let meleeButton;
 
+let sfxLightMelee;
+let sfxHeavyMelee;
+let sfxLightMage;
+let sfxHeavyMage;
+let sfxAmbience;
+
 let HP;
 let maxHP;
 let magic;
@@ -154,6 +160,7 @@ function setup() {
       gameState = "poem";
     } else if (gameState === "introLevel") {
       gameState = "classSelect";
+      sfxAmbience.stop();
     } else {
       gameState = "menu";
     }
@@ -186,6 +193,16 @@ function preload() {
 
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
 
+  sfxLightMelee = loadSound("sounds/light swing.mp3");
+  sfxHeavyMelee = loadSound("sounds/heavy swing.mp3");
+  sfxLightMage  = loadSound("sounds/light spell.mp3");
+  sfxHeavyMage  = loadSound("sounds/heavy spell.mp3");
+  sfxAmbience = loadSound("sounds/forest ambience.mp3");
+  
+  sfxHeavyMage.setVolume(0.5);
+  sfxLightMage.setVolume(0.2);
+  sfxHeavyMelee.setVolume(0.3);
+  sfxLightMelee.setVolume(0.3);
 
 }
 
@@ -234,7 +251,9 @@ function keyPressed() {
     attackType = "heavy";
     attackFrame = 0;
     attackTimer = 0;
-    
+
+    (selectedClass === "Mage" ? sfxHeavyMage : sfxHeavyMelee).play();
+
 
     if (selectedClass === "Mage") {
       magic = max(0, magic - 18);
@@ -261,6 +280,9 @@ function initIntroLevel() {
   maxMagic = 100;
   stamina = 100;
   maxStamina = 100;
+
+  sfxAmbience.setVolume(0.4);
+  sfxAmbience.loop();
 
   introDialogue = "Placeholder intro text.";
   introPrompt = "SPACE";
@@ -916,6 +938,9 @@ function mousePressed() {
     attackType = "light";
     attackFrame = 0;
     attackTimer = 0;
+
+    (selectedClass === "Mage" ? sfxLightMage : sfxLightMelee).play();
+
   
     if (selectedClass == "Mage") {
       magic = max(0, magic - 9);
