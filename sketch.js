@@ -292,7 +292,7 @@ function initIntroLevel() {
   dialogue = new Dialogue("This is test dialogue. This should print on the screen letter by letter if it is working.")
   isDialogue = true;
   // init player
-  groundY = 440 - drawSize;
+  groundY = 550 - drawSize;
   playerX = 200;
   playerY = groundY;
   velY = 0;
@@ -815,7 +815,9 @@ function drawIntroLevelScreen() {
   drawPlayer();
   drawIntroTopUI();
   drawHUD();
-  drawIntroDialogueBox();
+  if (isDialogue) {
+    drawIntroDialogueBox();
+  }
 }
 
 function updatePlayer() {
@@ -1058,55 +1060,60 @@ function drawIntroGround() {
   noStroke();
 
   fill(42, 54, 40);
-  rect(0, 410, worldWidth, 130);
+  textSize(30)
+  rect(0, (3 * height) / 4, worldWidth, (height * 19) / 80);
+  //rect(0, 410, worldWidth, (height * 19) / 100);
+
 
   fill(26, 33, 27);
-  rect(0, 470, worldWidth, 70);
+  //rect(0, 470, worldWidth, 70);
+  rect(0, (7 * height) / 8, worldWidth, (height) / 8);
 
   fill(60, 82, 59);
-  ellipse(270, 418, 560, 100);
-  ellipse(980, 420, 680, 110);
-  ellipse(1710, 422, 700, 110);
-  ellipse(2200, 424, 420, 90);
+  //text(width + " " + height, width / 2, height / 2)
+  ellipse(270, 523, 560, 125);
+  ellipse(980, 525, 680, 138);
+  ellipse(1710, 528, 700, 138);
+  ellipse(2200, 530, 420, 113);
 }
 
 function drawIntroPondArea() {
   noStroke();
 
   fill(48, 63, 44);
-  ellipse(320, 412, 360, 92);
+  ellipse(320, 515, 360, 115);
 
   fill(35, 45, 33);
-  ellipse(320, 418, 325, 70);
+  ellipse(320, 523, 325, 88);
 
   fill(62, 125, 150, 220);
-  ellipse(320, 392, 270, 82);
+  ellipse(320, 490, 270, 103);
 
   fill(105, 180, 205, 55);
-  ellipse(285, 382, 125 + sin(frameCount * 0.03) * 6, 22);
+  ellipse(285, 478, 125 + sin(frameCount * 0.03) * 6, 28);
 
   fill(145, 215, 235, 30);
-  ellipse(350, 395, 150 + sin(frameCount * 0.025) * 5, 18);
+  ellipse(350, 494, 150 + sin(frameCount * 0.025) * 5, 23);
 
   fill(82, 95, 78);
-  ellipse(210, 405, 28, 14);
-  ellipse(238, 414, 18, 10);
-  ellipse(430, 410, 34, 16);
-  ellipse(458, 404, 24, 12);
+  ellipse(210, 506, 28, 18);
+  ellipse(238, 518, 18, 13);
+  ellipse(430, 513, 34, 20);
+  ellipse(458, 505, 24, 15);
 
   fill(92, 132, 86);
-  ellipse(255, 397, 18, 10);
-  ellipse(274, 402, 14, 8);
-  ellipse(388, 398, 20, 11);
+  ellipse(255, 496, 18, 13);
+  ellipse(274, 503, 14, 10);
+  ellipse(388, 498, 20, 14);
 
   for (let i = 0; i < 8; i++) {
     let gx = 170 + i * 34;
-    drawGrassClump(gx, 410, 0.9);
+    drawGrassClump(gx, 513, 0.9);
   }
 
   for (let i = 0; i < 5; i++) {
     let gx = 395 + i * 26;
-    drawGrassClump(gx, 411, 0.75);
+    drawGrassClump(gx, 514, 0.75);
   }
 }
 
@@ -1116,9 +1123,9 @@ function drawGrassClump(x, y, s) {
   scale(s);
 
   fill(76, 116, 74);
-  triangle(-8, 0, -2, -16, 2, 0);
-  triangle(-2, 0, 4, -20, 8, 0);
-  triangle(4, 0, 10, -14, 14, 0);
+  triangle(-8, 0, -2, -20, 2, 0);
+  triangle(-2, 0, 4, -25, 8, 0);
+  triangle(4, 0, 10, -18, 14, 0);
 
   pop();
 }
@@ -1129,28 +1136,29 @@ function drawIntroForestArea() {
     let sway = sin(frameCount * 0.01 + i) * 2;
 
     fill(50, 34, 30);
-    quad(tx, 430, tx + 16, 430, tx + 10 + sway, 310, tx - 6 + sway, 310);
+    quad(tx, 538, tx + 16, 538, tx + 10 + sway, 388, tx - 6 + sway, 388);
 
     fill(34, 66, 45);
-    ellipse(tx + 6, 292, 78, 72);
-    ellipse(tx - 10, 305, 52, 46);
-    ellipse(tx + 22, 305, 52, 46);
+    ellipse(tx + 6, 365, 78, 90);
+    ellipse(tx - 10, 381, 52, 58);
+    ellipse(tx + 22, 381, 52, 58);
 
     fill(20, 30, 25, 80);
-    ellipse(tx + 6, 345, 70, 20);
+    ellipse(tx + 6, 431, 70, 25);
   }
 
   for (let i = 0; i < 18; i++) {
     let mx = 780 + i * 84;
     fill(110, 70, 130);
-    ellipse(mx, 427, 12, 8);
-    ellipse(mx + 6, 422, 10, 8);
+    ellipse(mx, 534, 12, 10);
+    ellipse(mx + 6, 528, 10, 10);
   }
 }
 
 function drawIntroVillagePathArea() {
   fill(130, 112, 84);
-  rect(1880, 410, 300, 18, 9);
+  // double check later
+  rect(1880, 513, 300, 23, 9);
 
   fill(228, 220, 190);
   textAlign(CENTER, CENTER);
@@ -1158,7 +1166,7 @@ function drawIntroVillagePathArea() {
   text("Path", 2030, 378);
 
   fill(235, 200, 110, 70);
-  ellipse(2060, 360, 60, 60);
+  ellipse(2060, 450, 60, 75);
 }
 
 function drawAmbientFireflies() {
@@ -1181,16 +1189,16 @@ function drawForegroundPlants() {
     let gx = cameraX + i * 45;
 
     fill(18, 28, 20, 180);
-    triangle(gx, 430, gx + 10, 400, gx + 18, 430);
-    triangle(gx + 12, 430, gx + 22, 395, gx + 30, 430);
+    triangle(gx, 538, gx + 10, 500, gx + 18, 538);
+    triangle(gx + 12, 538, gx + 22, 494, gx + 30, 538);
   }
 }
 
 function drawIntroTopUI() {
   let panelW = 220;
-  let panelH = 72;
+  let panelH = 90;
   let x = width - panelW - 22;
-  let y = 20;
+  let y = 25;
 
   fill(10, 12, 18, 190);
   rect(x, y, panelW, panelH, 12);
@@ -1211,9 +1219,9 @@ function drawIntroTopUI() {
 
 function drawIntroDialogueBox() {
   let boxX = width / 4;
-  let boxY = height - 122;
+  let boxY = height - 153;
   let boxW = width / 2;
-  let boxH = 96;
+  let boxH = 120;
 
   fill(9, 11, 18, 210);
   rect(boxX, boxY, boxW, boxH, 14);

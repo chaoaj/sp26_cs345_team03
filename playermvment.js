@@ -2,7 +2,7 @@ let spriteSheet;
 let playerX = 100;
 let frameHeight = 320;
 let frameWidth = 320;
-let drawSize = 100;
+let drawSize = 125;
 let currentFrame = 0;
 let facingLeft = false;
 let moveFrameIndex = 0;
