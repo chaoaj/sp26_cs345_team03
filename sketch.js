@@ -1,3 +1,5 @@
+let this_guy;
+
 let gameState = "music";
 let selectedClass = "";
 
@@ -240,7 +242,7 @@ function setup() {
 }
 
 function preload() {
-
+  this_guy = new Enemy("sml");
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
   fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
   
@@ -267,7 +269,7 @@ function preload() {
 }
 
 function draw() {
-
+  
   frames++;
   if (frames > 9) {
 
