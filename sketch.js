@@ -6,6 +6,7 @@ let settingsButton;
 let quitButton;
 let backButton;
 let level1DevButton;
+let testLevelButton;
 let volumeSlider;
 let mouseReleased = false;
 //-1 means not waiting, 0 means waiting with no click
@@ -78,6 +79,20 @@ let attackType = "";   // "", "light", "heavy"
 let attackFrame = 0;
 let attackTimer = 0;
 const attackFrameSpeed = 5; // draw frames per sprite frame
+
+// mage projectile system
+let mageProjectiles = [];
+
+// Hollow Purple charge system (mage heavy)
+let isCharging = false;
+let chargeTime = 0;
+const maxChargeTime = 180; // 3 seconds at 60fps caps the charge
+
+// extra sfx globals
+let sfxWalking;
+let sfxBarFull;
+let sfxTextLoop;
+let wasWalking = false;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -172,6 +187,8 @@ function setup() {
     } else if (gameState === "introLevel") {
       gameState = "classSelect";
       sfxAmbience.stop();
+      if (sfxWalking && sfxWalking.isPlaying()) sfxWalking.stop();
+      if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
     } else {
       gameState = "menu";
     }
@@ -192,6 +209,19 @@ function setup() {
   });
   level1DevButton.hide();
 
+  testLevelButton = createButton("Test Level");
+  testLevelButton.size(168, 38);
+  testLevelButton.position(width - 184, 144);
+  styleSecondaryButton(testLevelButton);
+  testLevelButton.mousePressed(function() {
+    let path = window.location.pathname.indexOf("dev/index.html") >= 0
+      ? "levels/test_level.html"
+      : "dev/levels/test_level.html";
+    let classParam = selectedClass === "Mage" ? "Mage" : "Melee";
+    window.open(path + "?class=" + encodeURIComponent(classParam), "_blank", "noopener,noreferrer");
+  });
+  testLevelButton.hide();
+
   volumeSlider = createSlider(0, 100, 50);
   volumeSlider.position(width / 2 - 190/2, 300);
   volumeSlider.size(190);
@@ -210,11 +240,18 @@ function preload() {
   sfxHeavyMage  = loadSound("sounds/heavy spell.mp3");
   sfxAmbience = loadSound("sounds/forest ambience.mp3");
   musicIntro = loadSound("sounds/music/introScreen.mp3");
-  
+
   sfxHeavyMage.setVolume(0.5);
   sfxLightMage.setVolume(0.2);
   sfxHeavyMelee.setVolume(0.3);
   sfxLightMelee.setVolume(0.3);
+
+  sfxWalking  = loadSound("sounds/walking hard_surface2.mp3");
+  sfxBarFull  = loadSound("sounds/bar full.mp3");
+  sfxTextLoop = loadSound("sounds/text loop.mp3");
+  sfxWalking.setVolume(0.35);
+  sfxBarFull.setVolume(0.5);
+  sfxTextLoop.setVolume(0.2);
 
 }
 
@@ -256,20 +293,18 @@ function keyPressed() {
     return;
   }
 
-  if ((key === 'q' || key === 'Q') && attackType === "") {
+  if ((key === 'q' || key === 'Q') && attackType === "" && !isCharging) {
     if (magic <= 0 || stamina <= 0) {
       return;
     }
-    attackType = "heavy";
-    attackFrame = 0;
-    attackTimer = 0;
-
-    (selectedClass === "Mage" ? sfxHeavyMage : sfxHeavyMelee).play();
-
-
     if (selectedClass === "Mage") {
-      magic = max(0, magic - 18);
+      isCharging = true;
+      chargeTime = 0;
     } else {
+      attackType = "heavy";
+      attackFrame = 0;
+      attackTimer = 0;
+      sfxHeavyMelee.play();
       stamina = max(0, stamina - 18);
     }
     return;
@@ -285,6 +320,15 @@ function keyPressed() {
 function initMusic() {
   musicIntro.setVolume(0.4);
   musicIntro.loop();
+}
+
+function keyReleased() {
+  if (gameState !== "introLevel") return;
+  if ((key === 'q' || key === 'Q') && isCharging && selectedClass === "Mage") {
+    fireHeavyMageProjectile();
+    isCharging = false;
+    chargeTime = 0;
+  }
 }
 
 function initIntroLevel() {
@@ -334,11 +378,18 @@ function initIntroLevel() {
   attackType = "";
   attackFrame = 0;
   attackTimer = 0;
+
+  isCharging = false;
+  chargeTime = 0;
+  mageProjectiles = [];
+  wasWalking = false;
+  if (sfxWalking && sfxWalking.isPlaying()) sfxWalking.stop();
+  if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
 }
 
 function drawHUD() {
   let x = 22;
-  let y = 76; 
+  let y = 76;
 
   drawBar(x, y, 180, 14, HP, maxHP, color(0, 64, 0), "HP");
 
@@ -715,6 +766,7 @@ function updateUI() {
   quitButton.hide();
   backButton.hide();
   level1DevButton.hide();
+  testLevelButton.hide();
   volumeSlider.hide();
   mageButton.hide();
   meleeButton.hide();
@@ -733,6 +785,8 @@ function updateUI() {
     backButton.show();
     level1DevButton.show();
     level1DevButton.position(width - 184, 98);
+    testLevelButton.show();
+    testLevelButton.position(width - 184, 144);
   } else if (gameState === "settings") {
     backButton.show();
     volumeSlider.show();
@@ -837,8 +891,10 @@ function drawIntroLevelScreen() {
 
   updateIntroLevel();
   updatePlayer();
+  updateMageProjectiles();
   drawIntroWorld();
   drawPlayer();
+  drawMageProjectiles();
   drawIntroTopUI();
   drawHUD();
   if (isDialogue) {
@@ -892,6 +948,39 @@ function updatePlayer() {
       }
     }
   }
+
+  // hollow purple charge tick
+  if (isCharging && selectedClass === "Mage") {
+    chargeTime = min(chargeTime + 1, maxChargeTime);
+    magic = max(0, magic - 0.15);
+    if (magic <= 0) {
+      fireHeavyMageProjectile();
+      isCharging = false;
+      chargeTime = 0;
+    }
+  }
+
+  // gradual regen
+  if (!isCharging) {
+    if (selectedClass === "Mage") {
+      let prev = magic;
+      magic = min(maxMagic, magic + 0.07);
+      if (prev < maxMagic && magic >= maxMagic && sfxBarFull) sfxBarFull.play();
+    } else {
+      let prev = stamina;
+      stamina = min(maxStamina, stamina + 0.15);
+      if (prev < maxStamina && stamina >= maxStamina && sfxBarFull) sfxBarFull.play();
+    }
+  }
+
+  // footstep SFX
+  let isWalking = moving && onGround;
+  if (isWalking && !wasWalking && sfxWalking) {
+    sfxWalking.loop();
+  } else if (!isWalking && wasWalking && sfxWalking) {
+    sfxWalking.stop();
+  }
+  wasWalking = isWalking;
 }
 
 // returns { frames, srcH, drawW, drawH } for current class + attack type
@@ -921,7 +1010,11 @@ function drawPlayer() {
   }
   pop();
 
-  drawAttack();
+  if (selectedClass === "Mage") {
+    drawChargeEffect();
+  } else {
+    drawAttack();
+  }
 }
 
 function drawAttack() {
@@ -952,6 +1045,142 @@ function drawAttack() {
   pop();
 }
 
+function spawnLightMageProjectile() {
+  let dir = facingLeft ? -1 : 1;
+  mageProjectiles.push({
+    x: playerX + drawSize / 2 + dir * (drawSize / 2 + 10),
+    y: playerY + drawSize / 2,
+    velX: dir * 9,
+    type: "light",
+    damage: 15,
+    drawW: 80,
+    drawH: 80,
+    maxDist: 340,
+    distTraveled: 0,
+    frame: 0,
+    animTimer: 0
+  });
+}
+
+function fireHeavyMageProjectile() {
+  if (chargeTime <= 0) return;
+  let ratio = chargeTime / maxChargeTime;
+  let damage = lerp(22, 80, ratio);
+  if (ratio === 1.0) {
+    damage = 999999999;
+  }
+  let radius = lerp(18, 55, ratio);
+  let dir = facingLeft ? -1 : 1;
+  sfxHeavyMage.play();
+  mageProjectiles.push({
+    x: playerX + drawSize / 2 + dir * (drawSize / 2 + 10),
+    y: playerY + drawSize / 2,
+    velX: dir * 11,
+    type: "heavy",
+    damage: damage,
+    radius: radius,
+    maxDist: Infinity,
+    distTraveled: 0,
+    frame: 0,
+    animTimer: 0,
+    ratio: ratio
+  });
+}
+
+function updateMageProjectiles() {
+  for (let i = mageProjectiles.length - 1; i >= 0; i--) {
+    let p = mageProjectiles[i];
+    p.x += p.velX;
+    p.distTraveled += abs(p.velX);
+    p.animTimer++;
+    if (p.animTimer % 5 === 0) p.frame++;
+
+    // when enemies are added: light stops on first hit (hit=true; break),
+    // heavy pierces all — do NOT break, let it continue through every enemy
+
+    let screenX = p.x - cameraX;
+    let offScreen = screenX < -120 || screenX > width + 120;
+    let expired = p.distTraveled >= p.maxDist;
+    if (offScreen || expired) mageProjectiles.splice(i, 1);
+  }
+}
+
+function drawMageProjectiles() {
+  for (let p of mageProjectiles) {
+    let screenX = p.x - cameraX;
+    if (p.type === "light") drawLightProjectile(p, screenX);
+    else drawHeavyProjectile(p, screenX);
+  }
+}
+
+function drawLightProjectile(p, screenX) {
+  if (!atkLightSheet) return;
+  let alpha = 255;
+  let remaining = p.maxDist - p.distTraveled;
+  if (remaining < 60) alpha = map(remaining, 0, 60, 0, 255);
+
+  let sx = (p.frame % 3) * frameWidth;
+  let goingLeft = p.velX < 0;
+
+  push();
+  tint(255, alpha);
+  if (goingLeft) {
+    translate(screenX, p.y - p.drawH / 2);
+    scale(-1, 1);
+    image(atkLightSheet, -p.drawW / 2, 0, p.drawW, p.drawH, sx, 0, frameWidth, 320);
+  } else {
+    image(atkLightSheet, screenX - p.drawW / 2, p.y - p.drawH / 2, p.drawW, p.drawH, sx, 0, frameWidth, 320);
+  }
+  noTint();
+  pop();
+}
+
+function drawHeavyProjectile(p, screenX) {
+  if (!atkHeavySheet) return;
+  let drawSize = lerp(100, 300, p.ratio);
+  let sx = (p.frame % 3) * frameWidth;
+  let goingLeft = p.velX < 0;
+
+  push();
+  if (goingLeft) {
+    translate(screenX, p.y - drawSize / 2);
+    scale(-1, 1);
+    image(atkHeavySheet, -drawSize / 2, 0, drawSize, drawSize, sx, 0, frameWidth, 320);
+  } else {
+    image(atkHeavySheet, screenX - drawSize / 2, p.y - drawSize / 2, drawSize, drawSize, sx, 0, frameWidth, 320);
+  }
+  pop();
+}
+
+function drawChargeEffect() {
+  if (!isCharging) return;
+  let ratio = chargeTime / maxChargeTime;
+  let r = lerp(6, 28, ratio);
+  let pulse = sin(frameCount * 0.22) * 3;
+  let screenX = playerX - cameraX + (facingLeft ? -r - 8 : drawSize + r + 8);
+  let ey = playerY + drawSize / 2;
+
+  push();
+  noStroke();
+  fill(180, 60, 240, 30);
+  ellipse(screenX, ey, (r + pulse) * 4, (r + pulse) * 4);
+  fill(210, 100, 255, 60);
+  ellipse(screenX, ey, (r + pulse) * 2.5, (r + pulse) * 2.5);
+  fill(240, 160, 255, 140);
+  ellipse(screenX, ey, (r + pulse) * 1.4, (r + pulse) * 1.4);
+  fill(255, 240, 255, 220);
+  ellipse(screenX, ey, r * 0.7, r * 0.7);
+
+  if (ratio > 0.85) {
+    fill(255, 235, 100);
+    textAlign(CENTER, BOTTOM);
+    textFont("Georgia");
+    textSize(13);
+    text("MAX", screenX, ey - r - 10);
+  }
+  pop();
+}
+
 function mousePressed() {
   if (gameState !== "introLevel") return;
   // ignore clicks on the back button area (top-left)
@@ -959,20 +1188,19 @@ function mousePressed() {
   // ignore clicks where the Level 1 (dev) button sits (below objective panel)
   if (mouseX > width - 200 && mouseY > 88 && mouseY < 148) return;
   if (!mouseReleased) return;
-  if (stamina <= 0 || magic <= 0) {
-    return;
-  }
+  if (stamina <= 0 || magic <= 0) return;
+  if (isCharging) return;
+
   if (attackType === "") {
-    attackType = "light";
-    attackFrame = 0;
-    attackTimer = 0;
-
-    (selectedClass === "Mage" ? sfxLightMage : sfxLightMelee).play();
-
-  
-    if (selectedClass == "Mage") {
+    if (selectedClass === "Mage") {
+      spawnLightMageProjectile();
+      sfxLightMage.play();
       magic = max(0, magic - 9);
     } else {
+      attackType = "light";
+      attackFrame = 0;
+      attackTimer = 0;
+      sfxLightMelee.play();
       stamina = max(0, stamina - 9);
     }
   }
@@ -1265,7 +1493,9 @@ function drawIntroDialogueBox() {
   textSize(15);
   if (isDialogue) {
     textAlign(LEFT, TOP);
-    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 100, 18)
+    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 100, 18);
+    if (!dialogue.finished && sfxTextLoop && !sfxTextLoop.isPlaying()) sfxTextLoop.loop();
+    else if (dialogue.finished && sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
   }
   //text(introDialogue, boxX + 18, boxY + 40, boxW - 150, 60);
 
@@ -1305,7 +1535,7 @@ function printByWord(lineText, x, y, maxLength, textSpace) {
             textY += textSpace;
 
         }
-        
+
 
     } else {
 
@@ -1313,7 +1543,7 @@ function printByWord(lineText, x, y, maxLength, textSpace) {
         textY += textSpace;
 
     }
-    
+
     return textY;
 
 }

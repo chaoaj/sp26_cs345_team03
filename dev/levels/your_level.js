@@ -49,6 +49,12 @@ let maxMagic = 100;
 let stamina = 100;
 let maxStamina = 100;
 
+// mage projectile system
+let mageProjectiles = [];
+let isCharging = false;
+let chargeTime = 0;
+const maxChargeTime = 180;
+
 let smokePuffs = [];
 
 const SPR = "../../sprites/sprint2/";
@@ -106,8 +112,11 @@ function setup() {
 
 function draw() {
   updatePlayer();
+  updateMageProjectiles();
   drawVillageWorld();
   drawPlayer();
+  drawMageProjectiles();
+  drawHUD();
   drawControlsHint();
 }
 
@@ -119,7 +128,10 @@ function drawControlsHint() {
   textAlign(LEFT, CENTER);
   textFont("Georgia");
   textSize(12);
-  text("A/D move   W jump   Click light   Q heavy   M class (" + selectedClass + ")", 22, height - 23);
+  let hint = selectedClass === "Mage"
+    ? "A/D move   W jump   Click light blast   Hold Q charge (release to fire)   M class (Mage)"
+    : "A/D move   W jump   Click light   Q heavy   M class (Melee)";
+  text(hint, 22, height - 23);
 }
 
 function keyPressed() {
@@ -135,22 +147,39 @@ function keyPressed() {
     syncClassAssets();
     return;
   }
-  if ((key === "q" || key === "Q") && attackType === "") {
-    attackType = "heavy";
-    attackFrame = 0;
-    attackTimer = 0;
-    if (selectedClass === "Mage") magic = max(0, magic - 18);
-    else stamina = max(0, stamina - 18);
+  if ((key === "q" || key === "Q") && attackType === "" && !isCharging) {
+    if (selectedClass === "Mage") {
+      isCharging = true;
+      chargeTime = 0;
+    } else {
+      attackType = "heavy";
+      attackFrame = 0;
+      attackTimer = 0;
+      stamina = max(0, stamina - 18);
+    }
+  }
+}
+
+function keyReleased() {
+  if ((key === "q" || key === "Q") && isCharging && selectedClass === "Mage") {
+    fireHeavyMageProjectile();
+    isCharging = false;
+    chargeTime = 0;
   }
 }
 
 function mousePressed() {
+  if (isCharging) return;
   if (attackType === "") {
-    attackType = "light";
-    attackFrame = 0;
-    attackTimer = 0;
-    if (selectedClass === "Mage") magic = max(0, magic - 9);
-    else stamina = max(0, stamina - 9);
+    if (selectedClass === "Mage") {
+      spawnLightMageProjectile();
+      magic = max(0, magic - 9);
+    } else {
+      attackType = "light";
+      attackFrame = 0;
+      attackTimer = 0;
+      stamina = max(0, stamina - 9);
+    }
   }
 }
 
@@ -216,6 +245,23 @@ function updatePlayer() {
       p.x = random(worldWidth * 0.2, worldWidth * 0.85);
     }
   }
+
+  // hollow purple charge tick
+  if (isCharging && selectedClass === "Mage") {
+    chargeTime = min(chargeTime + 1, maxChargeTime);
+    magic = max(0, magic - 0.15);
+    if (magic <= 0) {
+      fireHeavyMageProjectile();
+      isCharging = false;
+      chargeTime = 0;
+    }
+  }
+
+  // gradual regen
+  if (!isCharging) {
+    if (selectedClass === "Mage") magic = min(maxMagic, magic + 0.06);
+    else stamina = min(maxStamina, stamina + 0.06);
+  }
 }
 
 function getAtkInfo(type) {
@@ -243,7 +289,11 @@ function drawPlayer() {
   }
   pop();
 
-  drawAttack();
+  if (selectedClass === "Mage") {
+    drawChargeEffect();
+  } else {
+    drawAttack();
+  }
 }
 
 function drawAttack() {
@@ -882,4 +932,157 @@ function drawVillageSmoke() {
     fill(72, 76, 88, a);
     ellipse(p.x, p.y, p.w, p.w * 0.65);
   }
+}
+
+// ── mage projectile system ────────────────────────────────────────────────────
+
+function spawnLightMageProjectile() {
+  let dir = facingLeft ? -1 : 1;
+  mageProjectiles.push({
+    x: playerX + drawSize / 2 + dir * (drawSize / 2 + 10),
+    y: playerY + drawSize / 2,
+    velX: dir * 9,
+    type: "light",
+    damage: 15,
+    drawW: 80,
+    drawH: 80,
+    maxDist: 240,
+    distTraveled: 0,
+    frame: 0,
+    animTimer: 0
+  });
+}
+
+function fireHeavyMageProjectile() {
+  if (chargeTime <= 0) return;
+  let ratio = chargeTime / maxChargeTime;
+  let dir = facingLeft ? -1 : 1;
+  mageProjectiles.push({
+    x: playerX + drawSize / 2 + dir * (drawSize / 2 + 10),
+    y: playerY + drawSize / 2,
+    velX: dir * 11,
+    type: "heavy",
+    damage: lerp(22, 80, ratio),
+    radius: lerp(18, 55, ratio),
+    maxDist: Infinity,
+    distTraveled: 0,
+    frame: 0,
+    animTimer: 0,
+    ratio: ratio
+  });
+}
+
+function updateMageProjectiles() {
+  for (let i = mageProjectiles.length - 1; i >= 0; i--) {
+    let p = mageProjectiles[i];
+    p.x += p.velX;
+    p.distTraveled += abs(p.velX);
+    p.animTimer++;
+    if (p.animTimer % 5 === 0) p.frame++;
+
+    let screenX = p.x - cameraX;
+    let offScreen = screenX < -120 || screenX > width + 120;
+    let expired = p.distTraveled >= p.maxDist;
+    if (offScreen || expired) mageProjectiles.splice(i, 1);
+  }
+}
+
+function drawMageProjectiles() {
+  for (let p of mageProjectiles) {
+    let screenX = p.x - cameraX;
+    if (p.type === "light") drawLightProjectile(p, screenX);
+    else drawHeavyProjectile(p, screenX);
+  }
+}
+
+function drawLightProjectile(p, screenX) {
+  if (!atkMageLight || !atkMageLight.width) return;
+  let alpha = 255;
+  let remaining = p.maxDist - p.distTraveled;
+  if (remaining < 60) alpha = map(remaining, 0, 60, 0, 255);
+  let sx = (p.frame % 3) * frameWidth;
+  let goingLeft = p.velX < 0;
+
+  push();
+  tint(255, alpha);
+  if (goingLeft) {
+    translate(screenX, p.y - p.drawH / 2);
+    scale(-1, 1);
+    image(atkMageLight, -p.drawW / 2, 0, p.drawW, p.drawH, sx, 0, frameWidth, 320);
+  } else {
+    image(atkMageLight, screenX - p.drawW / 2, p.y - p.drawH / 2, p.drawW, p.drawH, sx, 0, frameWidth, 320);
+  }
+  noTint();
+  pop();
+}
+
+function drawHeavyProjectile(p, screenX) {
+  if (!atkMageHeavy || !atkMageHeavy.width) return;
+  let sz = lerp(100, 300, p.ratio);
+  let sx = (p.frame % 3) * frameWidth;
+  let goingLeft = p.velX < 0;
+
+  push();
+  if (goingLeft) {
+    translate(screenX, p.y - sz / 2);
+    scale(-1, 1);
+    image(atkMageHeavy, -sz / 2, 0, sz, sz, sx, 0, frameWidth, 320);
+  } else {
+    image(atkMageHeavy, screenX - sz / 2, p.y - sz / 2, sz, sz, sx, 0, frameWidth, 320);
+  }
+  pop();
+}
+
+function drawChargeEffect() {
+  if (!isCharging) return;
+  let ratio = chargeTime / maxChargeTime;
+  let r = lerp(6, 28, ratio);
+  let pulse = sin(frameCount * 0.22) * 3;
+  let screenX = playerX - cameraX + (facingLeft ? -r - 8 : drawSize + r + 8);
+  let ey = playerY + drawSize / 2;
+
+  push();
+  noStroke();
+  fill(180, 60, 240, 30);
+  ellipse(screenX, ey, (r + pulse) * 4, (r + pulse) * 4);
+  fill(210, 100, 255, 60);
+  ellipse(screenX, ey, (r + pulse) * 2.5, (r + pulse) * 2.5);
+  fill(240, 160, 255, 140);
+  ellipse(screenX, ey, (r + pulse) * 1.4, (r + pulse) * 1.4);
+  fill(255, 240, 255, 220);
+  ellipse(screenX, ey, r * 0.7, r * 0.7);
+  if (ratio > 0.85) {
+    fill(255, 235, 100);
+    textAlign(CENTER, BOTTOM);
+    textFont("Georgia");
+    textSize(13);
+    text("MAX", screenX, ey - r - 10);
+  }
+  pop();
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────────────
+
+function drawHUD() {
+  let x = 22;
+  let y = 16;
+  if (selectedClass === "Mage") {
+    drawBar(x, y, 160, 12, magic, maxMagic, color(0, 0, 80), "MP");
+  } else {
+    drawBar(x, y, 160, 12, stamina, maxStamina, color(180, 140, 0), "ST");
+  }
+}
+
+function drawBar(x, y, w, h, val, maxVal, col, label) {
+  let fw = (val / maxVal) * w;
+  fill(10, 12, 18, 200);
+  noStroke();
+  rect(x, y, w, h, 4);
+  fill(col);
+  rect(x, y, fw, h, 4);
+  fill(220, 220, 230);
+  textFont("Georgia");
+  textSize(11);
+  textAlign(LEFT, CENTER);
+  text(label, x + w + 8, y + h / 2);
 }
