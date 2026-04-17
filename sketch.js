@@ -159,6 +159,8 @@ function setup() {
     selectedClass = "Mage";
     initIntroLevel();
     gameState = "introLevel";
+    musicIntro.stop();
+    musicDream.loop();
     mouseReleased = false;
     updateUI();
   });
@@ -168,6 +170,8 @@ function setup() {
     selectedClass = "Melee";
     initIntroLevel();
     gameState = "introLevel";
+    musicIntro.stop();
+    musicDream.loop();
     mouseReleased = false;
     updateUI();
   });
@@ -181,6 +185,8 @@ function setup() {
     if (gameState === "settings" || gameState === "quit" || gameState === "poem") {
       mouseReleased = false;
       gameState = "menu";
+      musicDream.stop();
+      musicIntro.loop();
     } else if (gameState === "classSelect") {
       mouseReleased = false;
       gameState = "poem";
@@ -240,6 +246,7 @@ function preload() {
   sfxHeavyMage  = loadSound("sounds/heavy spell.mp3");
   sfxAmbience = loadSound("sounds/forest ambience.mp3");
   musicIntro = loadSound("sounds/music/introScreen.mp3");
+  musicDream = loadSound("sounds/music/Dream3.wav");
 
   sfxHeavyMage.setVolume(0.5);
   sfxLightMage.setVolume(0.2);
