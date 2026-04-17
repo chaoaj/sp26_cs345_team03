@@ -346,7 +346,7 @@ function initIntroLevel() {
   sfxAmbience.loop();
 
   introDialogue = "Placeholder intro text.";
-  introPrompt = "SPACE";
+  introPrompt = "Click to continue";
   introObjective = "Begin";
 
   //init test dialogue
@@ -1212,19 +1212,19 @@ function updateIntroLevel() {
   if (introStage === 0) {
     introObjective = "Begin";
     introDialogue = "Placeholder intro text.";
-    introPrompt = "SPACE";
+    introPrompt = "Click to continue";
   } else if (introStage === 1) {
     introObjective = "Continue";
     introDialogue = "Placeholder.";
-    introPrompt = "SPACE";
+    introPrompt = "Click to continue";
   } else if (introStage === 2) {
     introObjective = "Continue";
     introDialogue = "Placeholder.";
-    introPrompt = "SPACE";
+    introPrompt = "Click to continue";
   } else if (introStage === 3) {
     introObjective = "Continue";
     introDialogue = "Placeholder.";
-    introPrompt = "SPACE";
+    introPrompt = "Click to continue";
   } else {
     introObjective = "Continue";
     introDialogue = "Placeholder next area.";
