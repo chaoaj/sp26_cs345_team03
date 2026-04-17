@@ -5,6 +5,7 @@ There will be four main functions of the dialogue files
 
 1. Dialogue printing
     Dialogue will have a name for each person talking
+        Lines with characters speaking will start with #.
         The name of the speaker will be denoted by the ":" symbol. Anything
         before this symbol is read as the character name. For example
         Village Leader: There is no one who can help us but you!
@@ -14,17 +15,19 @@ There will be four main functions of the dialogue files
         *8
         will be read as change the talk speed to a character read every 8 frames
     Dialogue can skip and merge different paths
-        If it is necessary to merge two dialogue paths into one at some point, it can be denoted with a line number.
+        If it is necessary to merge two dialogue paths into one at some point, it can be denoted with a line number
+        and a % to start the line.
         For example:
 
         Trader: Anywho, enough of all that.
-        37
+        %37
 
         (Line 37) Trader: How'd you end up here?
 
         In this example, the reader skips to line 37 of the txt document.
 2. Dialogue options
     Dialogue will have different choices
+        Dialogue choice lines will start with "=".
         Choices will be marked using a [<a>, <b>, <c>] format. For example
         [<I'll help you!>|<What's going on?>|<This is none of my business, sorry>]
         In this, "I'll help you!", "What's going on?", and "This is none of my business, sorry"
@@ -86,3 +89,5 @@ There will be four main functions of the dialogue files
 
 In general, the different paths can be hard for a dev to read, so for the sake of it being
 easier to read, comments can be denoted with // as the start of a line for descriptions.
+
+The end of a conversation, signaling that the dialogue box should be hidden, is marked with "~".

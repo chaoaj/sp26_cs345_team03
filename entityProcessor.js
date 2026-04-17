@@ -51,21 +51,31 @@ class Entity {
 }
 class Dialogue extends Entity {
     
-    constructor(fullText) {
+    constructor(fullText, startText = "", lastLine = true) {
         super();
         if (fullText.length <= 0) {
             throw new Error("Text is empty or invalid.")
         }
         this.fullText = fullText;
-        this.outText = "";
+        this.outText = startText;
+        this.startLen = this.outText.length
         this.finished = false;
+        isDialogue = true;
+        nextDialogueReady = false;
         this.letterIndex = 0;
+        this.lastLine = lastLine;
     }
 
     isAlive() {
         if (this.finished && entityWaitingForMouse == 1) {
             entityWaitingForMouse = -1;
-            isDialogue = false;
+            if (this.lastLine) {
+                isDialogue = false;
+            } else {
+                nextDialogueReady = true;
+                printDialogue(currDiaFile[nextDiaLine], nextDiaLine)
+            }
+            
             return false;
         }
         return true;
@@ -76,7 +86,7 @@ class Dialogue extends Entity {
             this.outText += this.fullText[this.letterIndex]
             this.letterIndex++;
         }
-        if (this.outText.length == this.fullText.length) {
+        if (this.outText.length == this.fullText.length + this.startLen) {
             this.finished = true;
             entityWaitingForMouse = 0;
         }

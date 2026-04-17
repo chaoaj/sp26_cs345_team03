@@ -160,6 +160,7 @@ function setup() {
     initIntroLevel();
     gameState = "introLevel";
     musicIntro.stop();
+    musicDream.stop();
     musicDream.loop();
     mouseReleased = false;
     updateUI();
@@ -171,6 +172,7 @@ function setup() {
     initIntroLevel();
     gameState = "introLevel";
     musicIntro.stop();
+    musicDream.stop();
     musicDream.loop();
     mouseReleased = false;
     updateUI();
@@ -185,6 +187,7 @@ function setup() {
     if (gameState === "settings" || gameState === "quit" || gameState === "poem") {
       mouseReleased = false;
       gameState = "menu";
+      musicIntro.stop();
       musicDream.stop();
       musicIntro.loop();
     } else if (gameState === "classSelect") {
@@ -239,7 +242,8 @@ function setup() {
 function preload() {
 
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
-
+  fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
+  
   sfxLightMelee = loadSound("sounds/light swing.mp3");
   sfxHeavyMelee = loadSound("sounds/heavy swing.mp3");
   sfxLightMage  = loadSound("sounds/light spell.mp3");
@@ -357,7 +361,8 @@ function initIntroLevel() {
   introObjective = "Begin";
 
   //init test dialogue
-  dialogue = new Dialogue("This is test dialogue. This should print on the screen letter by letter if it is working.")
+  //dialogue = new Dialogue("This is test dialogue. This should print on the screen letter by letter if it is working.")
+  initDiaFile();
   isDialogue = true;
   // init player
   groundY = 550 - drawSize;
@@ -896,9 +901,12 @@ function drawIntroLevelScreen() {
     mouseReleased = true;
   }
 
-  updateIntroLevel();
-  updatePlayer();
-  updateMageProjectiles();
+  if (!(isDialogue)) {
+    updateIntroLevel();
+    updatePlayer();
+    updateMageProjectiles();
+  }
+  
   drawIntroWorld();
   drawPlayer();
   drawMageProjectiles();
@@ -1197,20 +1205,22 @@ function mousePressed() {
   if (!mouseReleased) return;
   if (stamina <= 0 || magic <= 0) return;
   if (isCharging) return;
-
-  if (attackType === "") {
-    if (selectedClass === "Mage") {
-      spawnLightMageProjectile();
-      sfxLightMage.play();
-      magic = max(0, magic - 9);
-    } else {
-      attackType = "light";
-      attackFrame = 0;
-      attackTimer = 0;
-      sfxLightMelee.play();
-      stamina = max(0, stamina - 9);
+  if (!(isDialogue)) {
+    if (attackType === "") {
+      if (selectedClass === "Mage") {
+        spawnLightMageProjectile();
+        sfxLightMage.play();
+        magic = max(0, magic - 9);
+      } else {
+        attackType = "light";
+        attackFrame = 0;
+        attackTimer = 0;
+        sfxLightMelee.play();
+        stamina = max(0, stamina - 9);
+      }
     }
   }
+  
 }
 
 function updateIntroLevel() {
@@ -1494,13 +1504,13 @@ function drawIntroDialogueBox() {
   textAlign(LEFT, TOP);
   textFont("Georgia");
   textSize(16);
-  text("Intro Sketch", boxX + 18, boxY + 14);
+  //text("Intro Sketch", boxX + 18, boxY + 14);
 
   fill(214, 214, 226);
   textSize(15);
   if (isDialogue) {
     textAlign(LEFT, TOP);
-    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 100, 18);
+    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 80, 18);
     if (!dialogue.finished && sfxTextLoop && !sfxTextLoop.isPlaying()) sfxTextLoop.loop();
     else if (dialogue.finished && sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
   }
