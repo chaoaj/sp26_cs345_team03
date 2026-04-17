@@ -1,4 +1,4 @@
-let gameState = "menu";
+let gameState = "music";
 let selectedClass = "";
 
 let startButton;
@@ -112,6 +112,17 @@ function setup() {
     });
   }
 
+  musicButton = createMusicButton("Allow music?", 0, 0, function() {
+    initMusic();
+    updateUI();
+    musicButton.hide();
+    gameState = "menu"
+    updateUI();
+  })
+  musicButton.size(300, 100);
+  musicButton.position((width / 2) - 175, (height / 2) - 50);
+
+
   startButton = createMainMenuButton("Start", 0, 0, function() {
     gameState = "poem";
     updateUI();
@@ -198,6 +209,7 @@ function preload() {
   sfxLightMage  = loadSound("sounds/light spell.mp3");
   sfxHeavyMage  = loadSound("sounds/heavy spell.mp3");
   sfxAmbience = loadSound("sounds/forest ambience.mp3");
+  musicIntro = loadSound("sounds/music/introScreen.mp3");
   
   sfxHeavyMage.setVolume(0.5);
   sfxLightMage.setVolume(0.2);
@@ -268,6 +280,11 @@ function keyPressed() {
       introStage++;
     }
   }
+}
+
+function initMusic() {
+  musicIntro.setVolume(0.4);
+  musicIntro.loop();
 }
 
 function initIntroLevel() {
@@ -619,6 +636,15 @@ function layoutMenuButtons() {
   startButton.position(buttonX, startY);
   settingsButton.position(buttonX, startY + gap);
   quitButton.position(buttonX, startY + gap * 2);
+}
+
+function createMusicButton(label, x, y, action) {
+  let button = createButton(label);
+  button.size(350, 100);
+  button.position((width / 2) - (175), (height / 2) - 50);
+  styleMainButton(button);
+  button.mousePressed(action);
+  return button;
 }
 
 function createMainMenuButton(label, x, y, action) {
