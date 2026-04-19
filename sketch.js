@@ -41,10 +41,10 @@ let fireflies = [];
 
 // main menu panel
 let menuPanel = {
-  x: 110,
-  y: 34,
-  w: 360,
-  h: 472
+  get x() { return width * 0.073 },
+  get y() { return height * 0.05 },
+  get w() { return width * 0.238 },
+  get h() { return height * 0.80 }
 };
 
 // intro level
@@ -137,7 +137,7 @@ function setup() {
     updateUI();
   })
   musicButton.size(300, 100);
-  musicButton.position((width / 2) - 175, (height / 2) - 50);
+  musicButton.position((width / 2) - 150, (height / 2) - 50);
 
 
   startButton = createMainMenuButton("Start", 0, 0, function() {
@@ -155,9 +155,8 @@ function setup() {
     updateUI();
   });
 
-  let classButtonX = width / 2 - 100;
 
-  mageButton = createMainMenuButton("Mage", classButtonX, 245, function() {
+  mageButton = createMainMenuButton("Mage", 0, 0, function() {
     selectedClass = "Mage";
     initIntroLevel();
     gameState = "introLevel";
@@ -169,7 +168,7 @@ function setup() {
   });
   mageButton.size(200, 62);
 
-  meleeButton = createMainMenuButton("Melee", classButtonX, 325, function() {
+  meleeButton = createMainMenuButton("Melee", 0, 0, function() {
     selectedClass = "Melee";
     initIntroLevel();
     gameState = "introLevel";
@@ -238,6 +237,7 @@ function setup() {
   volumeSlider.size(190);
 
   layoutMenuButtons();
+  layoutClassButtons();
   updateUI();
 }
 
@@ -367,7 +367,7 @@ function initIntroLevel() {
   initDiaFile();
   isDialogue = true;
   // init player
-  groundY = 550 - drawSize;
+  groundY = (height * 3 / 4) - drawSize;
   playerX = 200;
   playerY = groundY;
   velY = 0;
@@ -469,8 +469,8 @@ function drawSkyGradient() {
 }
 
 function drawBackGlow() {
-  let glowX = width * 0.63;
-  let glowY = height * 0.22;
+  let glowX = width * 0.75;
+  let glowY = height * 0.25;
 
   noStroke();
 
@@ -535,27 +535,28 @@ function drawMidMountains() {
 function drawCastleSilhouette() {
   push();
 
+  let s = height / 900;
   let castleX = width * 0.67;
   let castleY = height * 0.52;
 
   translate(castleX, castleY);
   fill(9, 9, 15);
 
-  rect(-36, 95, 170, 170);
-  rect(18, 18, 32, 247);
-  rect(82, 52, 36, 213);
-  rect(-74, 46, 34, 219);
+  rect(-36*s, 95*s,  170*s, 170*s);
+  rect( 18*s, 18*s,   32*s, 247*s);
+  rect( 82*s, 52*s,   36*s, 213*s);
+  rect(-74*s, 46*s,   34*s, 219*s);
 
-  triangle(-74, 46, -57, 6, -40, 46);
-  triangle(18, 18, 34, -28, 50, 18);
-  triangle(82, 52, 100, 10, 118, 52);
+  triangle(-74*s, 46*s, -57*s,  6*s, -40*s, 46*s);
+  triangle( 18*s, 18*s,  34*s, -28*s,  50*s, 18*s);
+  triangle( 82*s, 52*s, 100*s,  10*s, 118*s, 52*s);
 
-  rect(17, 176, 40, 89, 13);
+  rect(17*s, 176*s, 40*s, 89*s, 13);
 
   fill(255, 210, 50, 32);
-  rect(-24, 130, 12, 18);
-  rect(66, 118, 12, 18);
-  rect(92, 128, 12, 18);
+  rect(-24*s, 130*s, 12*s, 18*s);
+  rect( 66*s, 118*s, 12*s, 18*s);
+  rect( 92*s, 128*s, 12*s, 18*s);
 
   pop();
 }
@@ -646,7 +647,7 @@ function drawSubScreenPanel() {
   let panelW = 590;
   let panelH = 470;
   let panelX = width * 0.5 - panelW * 0.5;
-  let panelY = 34;
+  let panelY = height * 0.04;
 
   fill(7, 8, 12, 176);
   rect(panelX, panelY, panelW, panelH, 18);
@@ -658,14 +659,12 @@ function drawSubScreenPanel() {
   noFill();
   rect(panelX + 12, panelY + 12, panelW - 24, panelH - 24, 16);
 
-  stroke(255, 255, 255, 12);
-  line(panelX + 30, panelY + 78, panelX + panelW - 30, panelY + 78);
-  noStroke();
+  return { x: panelX, y: panelY, w: panelW, h: panelH };
 }
 
 function drawTitle() {
   let centerX = menuPanel.x + menuPanel.w / 2;
-  let y = menuPanel.y + 42;
+  let y = menuPanel.y + menuPanel.h * 0.06;
 
   textAlign(CENTER, TOP);
   textFont("Georgia");
@@ -690,8 +689,8 @@ function drawTitle() {
 function layoutMenuButtons() {
   let buttonW = 250;
   let buttonH = 56;
-  let startY = menuPanel.y + 245;
-  let gap = 72;
+  let startY = menuPanel.y + menuPanel.h * 0.52;
+  let gap = menuPanel.h * 0.152;
   let buttonX = menuPanel.x + (menuPanel.w - buttonW) / 2;
 
   startButton.size(buttonW, buttonH);
@@ -703,10 +702,24 @@ function layoutMenuButtons() {
   quitButton.position(buttonX, startY + gap * 2);
 }
 
+function layoutClassButtons() {
+  let panelW = 590;
+  let panelH = 470;
+  let panelX = width * 0.5 - panelW * 0.5;
+  let panelY = height * 0.04;
+
+  let titleY = panelY + panelH * 0.18;
+  let descY  = panelY + panelH * 0.82;
+  let midY   = (titleY + descY) / 2;
+
+  mageButton.position(panelX + panelW / 2 - 100, midY - 72);
+  meleeButton.position(panelX + panelW / 2 - 100, midY + 10);
+}
+
 function createMusicButton(label, x, y, action) {
   let button = createButton(label);
-  button.size(350, 100);
-  button.position((width / 2) - (175), (height / 2) - 50);
+  button.size(300, 100);
+  button.position((width / 2) - (150), (height / 2) - 50);
   styleMainButton(button);
   button.mousePressed(action);
   return button;
@@ -846,20 +859,20 @@ function drawPoemScreen() {
 }
 
 function drawClassSelectScreen() {
-  drawSubScreenPanel();
+  let p = drawSubScreenPanel();
 
   fill(244, 244, 248);
   textAlign(CENTER, CENTER);
   textFont("Georgia");
   textStyle(BOLD);
   textSize(34);
-  text("Select a Class", width / 2, 160);
+  text("Select a Class", p.x + p.w / 2, p.y + p.h * 0.18);
 
   textStyle(NORMAL);
   textSize(18);
   fill(214, 214, 226);
-  text("Mage uses spell power and ranged magic.", width / 2, 410);
-  text("Melee focuses on close combat and raw strength.", width / 2, 440);
+  text("Mage uses spell power and ranged magic.", p.x + p.w / 2, p.y + p.h * 0.82);
+  text("Melee focuses on close combat and raw strength.", p.x + p.w / 2, p.y + p.h * 0.90);
 }
 
 function drawSettingsScreen() {
@@ -882,20 +895,20 @@ function drawSettingsScreen() {
 }
 
 function drawQuitScreen() {
-  drawSubScreenPanel();
+  let p = drawSubScreenPanel();
 
   fill(244, 244, 248);
   textAlign(CENTER, CENTER);
   textFont("Georgia");
   textStyle(BOLD);
   textSize(34);
-  text("Return to Sleep", width / 2 + 35, 200);
+  text("Return to Sleep", p.x + p.w / 2, p.y + p.h * 0.35);
 
   textStyle(NORMAL);
   textSize(20);
   fill(214, 214, 226);
-  text("Leave this screen and return to the title menu.", width / 2 + 35, 285);
-  text("Press Back to continue.", width / 2 + 35, 318);
+  text("Leave this screen and return to the title menu.", p.x + p.w / 2, p.y + p.h * 0.55);
+  text("Press Back to continue.", p.x + p.w / 2, p.y + p.h * 0.65);
 }
 
 function drawIntroLevelScreen() {
@@ -917,6 +930,22 @@ function drawIntroLevelScreen() {
   if (isDialogue) {
     drawIntroDialogueBox();
   }
+}
+
+function windowResized() {
+  let minW = 960;
+  let minH = 540;
+
+  resizeCanvas(max(windowWidth, minW), max(windowHeight, minH));
+
+  groundY = (height * 3 / 4) - drawSize;
+  if (playerY > groundY) playerY = groundY;
+  layoutMenuButtons();
+  layoutClassButtons();
+  level1DevButton.position(width - 184, 98);
+  testLevelButton.position(width - 184, 144);
+  volumeSlider.position(width / 2 - 95, height * 0.35);
+  musicButton.position((width / 2) - 150, (height / 2) - 50);
 }
 
 function updatePlayer() {
