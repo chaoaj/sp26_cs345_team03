@@ -39,6 +39,11 @@ let poemLines;
 let frames = 0;
 let fireflies = [];
 
+// pre-rendered static background buffers
+let menuBgBuffer;
+let introSkyBuffer;
+let vignetteBuffer;
+
 // main menu panel
 let menuPanel = {
   x: 110,
@@ -95,6 +100,116 @@ let sfxWalking;
 let sfxBarFull;
 let sfxTextLoop;
 let wasWalking = false;
+
+function buildMenuBgBuffer() {
+  if (menuBgBuffer) menuBgBuffer.remove();
+  menuBgBuffer = createGraphics(width, height);
+  let pg = menuBgBuffer;
+
+  for (let y = 0; y < height; y++) {
+    let t = map(y, 0, height, 0, 1);
+    let top = color(13, 14, 28);
+    let mid = color(28, 24, 48);
+    let bot = color(70, 52, 92);
+    let c = t < 0.55 ? lerpColor(top, mid, t / 0.55) : lerpColor(mid, bot, (t - 0.55) / 0.45);
+    pg.stroke(c);
+    pg.line(0, y, width, y);
+  }
+  pg.noStroke();
+
+  let glowX = width * 0.63;
+  let glowY = height * 0.22;
+  for (let i = 0; i < 10; i++) {
+    pg.fill(205, 215, 255, 10 - i * 0.7);
+    pg.ellipse(glowX, glowY, 320 - i * 24, 220 - i * 16);
+  }
+  pg.fill(220, 230, 255, 14);
+  pg.ellipse(glowX, glowY, 130, 90);
+
+  pg.fill(25, 22, 42);
+  pg.beginShape();
+  pg.vertex(0, height * 0.72);
+  pg.vertex(width * 0.06, height * 0.63);
+  pg.vertex(width * 0.14, height * 0.68);
+  pg.vertex(width * 0.22, height * 0.56);
+  pg.vertex(width * 0.30, height * 0.65);
+  pg.vertex(width * 0.39, height * 0.50);
+  pg.vertex(width * 0.49, height * 0.63);
+  pg.vertex(width * 0.58, height * 0.52);
+  pg.vertex(width * 0.68, height * 0.66);
+  pg.vertex(width * 0.78, height * 0.56);
+  pg.vertex(width * 0.88, height * 0.67);
+  pg.vertex(width, height * 0.58);
+  pg.vertex(width, height);
+  pg.vertex(0, height);
+  pg.endShape(CLOSE);
+
+  pg.fill(17, 15, 28);
+  pg.beginShape();
+  pg.vertex(0, height * 0.82);
+  pg.vertex(width * 0.08, height * 0.73);
+  pg.vertex(width * 0.16, height * 0.79);
+  pg.vertex(width * 0.24, height * 0.67);
+  pg.vertex(width * 0.33, height * 0.78);
+  pg.vertex(width * 0.42, height * 0.69);
+  pg.vertex(width * 0.52, height * 0.83);
+  pg.vertex(width * 0.61, height * 0.70);
+  pg.vertex(width * 0.71, height * 0.81);
+  pg.vertex(width * 0.81, height * 0.69);
+  pg.vertex(width * 0.91, height * 0.80);
+  pg.vertex(width, height * 0.73);
+  pg.vertex(width, height);
+  pg.vertex(0, height);
+  pg.endShape(CLOSE);
+
+  pg.push();
+  pg.translate(width * 0.67, height * 0.52);
+  pg.fill(9, 9, 15);
+  pg.rect(-36, 95, 170, 170);
+  pg.rect(18, 18, 32, 247);
+  pg.rect(82, 52, 36, 213);
+  pg.rect(-74, 46, 34, 219);
+  pg.triangle(-74, 46, -57, 6, -40, 46);
+  pg.triangle(18, 18, 34, -28, 50, 18);
+  pg.triangle(82, 52, 100, 10, 118, 52);
+  pg.rect(17, 176, 40, 89, 13);
+  pg.fill(255, 210, 50, 32);
+  pg.rect(-24, 130, 12, 18);
+  pg.rect(66, 118, 12, 18);
+  pg.rect(92, 128, 12, 18);
+  pg.pop();
+}
+
+function buildIntroSkyBuffer() {
+  if (introSkyBuffer) introSkyBuffer.remove();
+  introSkyBuffer = createGraphics(width, height);
+  let pg = introSkyBuffer;
+
+  for (let y = 0; y < height; y++) {
+    let t = map(y, 0, height, 0, 1);
+    let c1 = color(17, 15, 31);
+    let c2 = color(48, 61, 72);
+    let c3 = color(84, 90, 88);
+    let c = t < 0.58 ? lerpColor(c1, c2, t / 0.58) : lerpColor(c2, c3, (t - 0.58) / 0.42);
+    pg.stroke(c);
+    pg.line(0, y, width, y);
+  }
+  pg.noStroke();
+  pg.fill(220, 240, 255, 18);
+  pg.ellipse(width * 0.72, 110, 180, 120);
+}
+
+function buildVignetteBuffer() {
+  if (vignetteBuffer) vignetteBuffer.remove();
+  vignetteBuffer = createGraphics(width, height);
+  let pg = vignetteBuffer;
+  pg.noFill();
+  for (let i = 0; i < 78; i++) {
+    pg.stroke(0, 0, 0, 3);
+    pg.rect(-i, -i, width + i * 2, height + i * 2);
+  }
+  pg.noStroke();
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -237,6 +352,9 @@ function setup() {
   volumeSlider.position(width / 2 - 190/2, 300);
   volumeSlider.size(190);
 
+  buildMenuBgBuffer();
+  buildIntroSkyBuffer();
+  buildVignetteBuffer();
   layoutMenuButtons();
   updateUI();
 }
@@ -271,12 +389,9 @@ function preload() {
 function draw() {
   
   frames++;
-  if (frames > 9) {
+  if (frames > 9) frames = 0;
 
-    frames = 0;
-
-  }
-  drawFantasyBackground();
+  if (gameState !== "introLevel") drawFantasyBackground();
 
   if (gameState === "menu") {
     drawMenuPanel();
@@ -296,6 +411,14 @@ function draw() {
     entityWaitingForMouse = 1;
   }
   frameCalls();
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  buildMenuBgBuffer();
+  buildIntroSkyBuffer();
+  buildVignetteBuffer();
+  layoutMenuButtons();
 }
 
 function keyPressed() {
@@ -435,16 +558,12 @@ function drawBar(x, y, w, h, val, maxVal, col, label) {
 }
 
 function drawFantasyBackground() {
-  drawSkyGradient();
-  drawBackGlow();
+  image(menuBgBuffer, 0, 0);
   drawStars();
-  drawBackMountains();
-  drawMidMountains();
-  drawCastleSilhouette();
   drawMistLayer(height - 70, 210, 0.12);
   drawMistLayer(height - 22, 260, 0.20);
   drawParticles();
-  drawForegroundVignette();
+  image(vignetteBuffer, 0, 0);
 }
 
 function drawSkyGradient() {
@@ -1266,26 +1385,7 @@ function drawIntroWorld() {
 }
 
 function drawIntroSky() {
-  for (let y = 0; y < height; y++) {
-    let t = map(y, 0, height, 0, 1);
-    let c1 = color(17, 15, 31);
-    let c2 = color(48, 61, 72);
-    let c3 = color(84, 90, 88);
-
-    let c;
-    if (t < 0.58) {
-      c = lerpColor(c1, c2, t / 0.58);
-    } else {
-      c = lerpColor(c2, c3, (t - 0.58) / 0.42);
-    }
-
-    stroke(c);
-    line(0, y, width, y);
-  }
-  noStroke();
-
-  fill(220, 240, 255, 18);
-  ellipse(width * 0.72, 110, 180, 120);
+  image(introSkyBuffer, 0, 0);
 }
 
 function drawIntroParallaxBack() {
