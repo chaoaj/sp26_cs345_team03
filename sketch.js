@@ -785,29 +785,41 @@ function drawTitle() {
   let centerX = menuPanel.x + menuPanel.w / 2;
   let y = menuPanel.y + menuPanel.h * 0.06;
 
+  let bigFont = menuPanel.h * 0.056;
+  let smallFont = menuPanel.h * 0.030;
+
+  let bigGap = bigFont * 1.05;
+  let smallGap = smallFont * 1.1;
+
+  let subX = menuPanel.x + menuPanel.w * 0.12;
+
   textAlign(CENTER, TOP);
   textFont("Georgia");
 
   fill(165, 175, 220, 28);
   textStyle(BOLD);
-  textSize(40);
+  textSize(bigFont);
   text("That Time I Was", centerX + 3, y + 3);
-  text("An Office Worker", centerX + 3, y + 54);
+  text("An Office Worker", centerX + 3, y + bigGap + 3);
 
   fill(245, 245, 250);
   text("That Time I Was", centerX, y);
-  text("An Office Worker", centerX, y + 50);
+  text("An Office Worker", centerX, y + bigGap);
 
   fill(206, 206, 220);
   textStyle(NORMAL);
-  textSize(15);
-  text("and Was Put in a Coma by a", centerX, y + 118);
-  text("Demon Sleep God", centerX, y + 140);
+  textSize(smallFont);
+  let subY = y + bigGap + bigFont + smallFont * 0.8;
+  textAlign(LEFT, TOP);
+  text("and Was Put in a Coma by a", subX, subY);
+  text("Demon Sleep God", subX, subY + smallGap);
+  textAlign(CENTER, TOP);
 }
 
 function layoutMenuButtons() {
-  let buttonW = 250;
-  let buttonH = 56;
+  let buttonW = menuPanel.w * 0.82;
+  let buttonH = menuPanel.h * 0.078;
+
   let startY = menuPanel.y + menuPanel.h * 0.52;
   let gap = menuPanel.h * 0.152;
   let buttonX = menuPanel.x + (menuPanel.w - buttonW) / 2;
@@ -858,7 +870,7 @@ function styleMainButton(button) {
   button.style("color", "#f2f2f7");
   button.style("border", "1px solid rgba(210, 216, 240, 0.18)");
   button.style("font-family", "Georgia");
-  button.style("font-size", "22px");
+  button.style("font-size", "clamp(14px, 1.6vw, 26px)");
   button.style("letter-spacing", "0.4px");
   button.style("border-radius", "10px");
   button.style("box-shadow", "0 0 0 rgba(0,0,0,0)");
