@@ -1472,62 +1472,59 @@ function drawIntroParallaxBack() {
 
 function drawIntroGround() {
   noStroke();
+  let gY = (3 * height) / 4;
 
   fill(42, 54, 40);
-  textSize(30)
-  rect(0, (3 * height) / 4, worldWidth, (height * 19) / 80);
-  //rect(0, 410, worldWidth, (height * 19) / 100);
-
+  rect(0, gY, worldWidth, (height * 19) / 80);
 
   fill(26, 33, 27);
-  //rect(0, 470, worldWidth, 70);
   rect(0, (7 * height) / 8, worldWidth, (height) / 8);
 
   fill(60, 82, 59);
-  //text(width + " " + height, width / 2, height / 2)
-  ellipse(270, 523, 560, 125);
-  ellipse(980, 525, 680, 138);
-  ellipse(1710, 528, 700, 138);
-  ellipse(2200, 530, 420, 113);
+  ellipse(270, gY - 17, 560, 125);
+  ellipse(980, gY - 15, 680, 138);
+  ellipse(1710, gY - 12, 700, 138);
+  ellipse(2200, gY - 10, 420, 113);
 }
 
 function drawIntroPondArea() {
   noStroke();
+  let gY = (3 * height) / 4;
 
   fill(48, 63, 44);
-  ellipse(320, 515, 360, 115);
+  ellipse(320, gY - 25, 360, 115);
 
   fill(35, 45, 33);
-  ellipse(320, 523, 325, 88);
+  ellipse(320, gY - 17, 325, 88);
 
   fill(62, 125, 150, 220);
-  ellipse(320, 490, 270, 103);
+  ellipse(320, gY - 50, 270, 103);
 
   fill(105, 180, 205, 55);
-  ellipse(285, 478, 125 + sin(frameCount * 0.03) * 6, 28);
+  ellipse(285, gY - 62, 125 + sin(frameCount * 0.03) * 6, 28);
 
   fill(145, 215, 235, 30);
-  ellipse(350, 494, 150 + sin(frameCount * 0.025) * 5, 23);
+  ellipse(350, gY - 46, 150 + sin(frameCount * 0.025) * 5, 23);
 
   fill(82, 95, 78);
-  ellipse(210, 506, 28, 18);
-  ellipse(238, 518, 18, 13);
-  ellipse(430, 513, 34, 20);
-  ellipse(458, 505, 24, 15);
+  ellipse(210, gY - 34, 28, 18);
+  ellipse(238, gY - 22, 18, 13);
+  ellipse(430, gY - 27, 34, 20);
+  ellipse(458, gY - 35, 24, 15);
 
   fill(92, 132, 86);
-  ellipse(255, 496, 18, 13);
-  ellipse(274, 503, 14, 10);
-  ellipse(388, 498, 20, 14);
+  ellipse(255, gY - 44, 18, 13);
+  ellipse(274, gY - 37, 14, 10);
+  ellipse(388, gY - 42, 20, 14);
 
   for (let i = 0; i < 8; i++) {
     let gx = 170 + i * 34;
-    drawGrassClump(gx, 513, 0.9);
+    drawGrassClump(gx, gY - 27, 0.9);
   }
 
   for (let i = 0; i < 5; i++) {
     let gx = 395 + i * 26;
-    drawGrassClump(gx, 514, 0.75);
+    drawGrassClump(gx, gY - 26, 0.75);
   }
 }
 
@@ -1545,42 +1542,43 @@ function drawGrassClump(x, y, s) {
 }
 
 function drawIntroForestArea() {
+  let gY = (3 * height) / 4;
   for (let i = 0; i < 24; i++) {
     let tx = 760 + i * 68;
     let sway = sin(frameCount * 0.01 + i) * 2;
 
     fill(50, 34, 30);
-    quad(tx, 538, tx + 16, 538, tx + 10 + sway, 388, tx - 6 + sway, 388);
+    quad(tx, gY - 2, tx + 16, gY - 2, tx + 10 + sway, gY - 152, tx - 6 + sway, gY - 152);
 
     fill(34, 66, 45);
-    ellipse(tx + 6, 365, 78, 90);
-    ellipse(tx - 10, 381, 52, 58);
-    ellipse(tx + 22, 381, 52, 58);
+    ellipse(tx + 6, gY - 175, 78, 90);
+    ellipse(tx - 10, gY - 159, 52, 58);
+    ellipse(tx + 22, gY - 159, 52, 58);
 
     fill(20, 30, 25, 80);
-    ellipse(tx + 6, 431, 70, 25);
+    ellipse(tx + 6, gY - 109, 70, 25);
   }
 
   for (let i = 0; i < 18; i++) {
     let mx = 780 + i * 84;
     fill(110, 70, 130);
-    ellipse(mx, 534, 12, 10);
-    ellipse(mx + 6, 528, 10, 10);
+    ellipse(mx, gY - 6, 12, 10);
+    ellipse(mx + 6, gY - 12, 10, 10);
   }
 }
 
 function drawIntroVillagePathArea() {
+  let gY = (3 * height) / 4;
   fill(130, 112, 84);
-  // double check later
-  rect(1880, 513, 300, 23, 9);
+  rect(1880, gY - 27, 300, 23, 9);
 
   fill(228, 220, 190);
   textAlign(CENTER, CENTER);
   textSize(18);
-  text("Path", 2030, 378);
+  text("Path", 2030, gY - 162);
 
   fill(235, 200, 110, 70);
-  ellipse(2060, 450, 60, 75);
+  ellipse(2060, gY - 90, 60, 75);
 }
 
 function drawAmbientFireflies() {
@@ -1599,12 +1597,13 @@ function drawAmbientFireflies() {
 }
 
 function drawForegroundPlants() {
+  let gY = (3 * height) / 4;
   for (let i = 0; i < 24; i++) {
     let gx = cameraX + i * 45;
 
     fill(18, 28, 20, 180);
-    triangle(gx, 538, gx + 10, 500, gx + 18, 538);
-    triangle(gx + 12, 538, gx + 22, 494, gx + 30, 538);
+    triangle(gx, gY - 2, gx + 10, gY - 40, gx + 18, gY - 2);
+    triangle(gx + 12, gY - 2, gx + 22, gY - 46, gx + 30, gY - 2);
   }
 }
 
