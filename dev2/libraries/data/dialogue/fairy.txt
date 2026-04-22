@@ -1,4 +1,5 @@
 #Fairy: Look who finally woke up!
+%27
 #Fairy: Oh, poor lost soul... your eyes are still sunken into some grim other world, aren't they?
 #Fairy: I bet'chya had some pretty bad dreams, huh?
 =Player: [They felt so real...|Where am I?]
