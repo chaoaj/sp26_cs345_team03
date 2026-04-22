@@ -106,41 +106,63 @@ class Enemy extends Entity {
         this.setSprites(enemy_type);
         this.type = enemy_type;
         this.state = "walking";
-        this.scale = 1 / 6;
         this.enemy_frame = 0;
         this.direction = "R";
         this.onGround = false;
 
-        this.x = 100;
-        this.y = 100;
-        this.xVel = 0;
-        this.yVel = 1;
+        this.x = 100; //spawn location
+        this.y = 100; // spawn location
+        this.xVel = 0; 
+        this.yVel = 0; 
+
+        this.spawnedIn = false;
     }
 
+    //self explanatory
     isAlive() {
-        return this.health > 0;
+        if (this.health <= 0) {
+            this.die();
+            return false;
+        }
+        return true;
     }
 
+    //moves frame and then if game is not in the menu then will activate
     frameChange() {
         this.enemy_frame += 0.13;
-        if (gameState === "introLevel") {
+        if (gameState === "introLevel" && this.spawnedIn) {
             this.load_enemies();
-            this.move_ya_body();
+            this.moveAndJumpAndGravity();
             this.intelligence();
+            this.processHealth();
+        }
+
+        if (playerX > worldWidth - drawSize - 500) {
+            this.spawnedIn = true;
+            console.log(this.type);
         }
     }
 
+    //okay so sprite_info is the dictionary that holds the info
+    //for each type of enemy (sml, med, lar) so whenver something,
+    //related to the sprite is mentioned, sprite_info is referenced
     setSprites(type) {
         switch (type) {
             case "sml":
                 this.sprite_info = {
-                    "sheet": "/sprites/sprint_1/small_enemy_320x320.png",
-                    "walk_start": 2,
-                    "walk_end": 9,
-                    "jump": 1,
-                    "atk_sheet": "/sprites/sprint_1/small_enemy_atk_400x400.png",
-                    "atk_start": 0,
-                    "atk_end": 5
+                    "sheet": "/sprites/sprint_1/small_enemy_320x320.png", //img path
+                    "walk_start": 2, //walk frame start
+                    "walk_end": 9, //walk frame end
+                    "walk_speed": 4,
+                    "jump": 1, //jump frame
+                    "atk_sheet": "/sprites/sprint_1/small_enemy_atk_400x400.png", //img path
+                    "atk_start": 0, //atk frame start
+                    "atk_end": 5, //atk frame end
+                    "sprite_size": [320, 320], //w, h
+                    "walk_pos_delta": 0, //fix walking pos
+                    "atk_sprite_size": [400,400], //w, h of atk
+                    "atk_pos_delta": 15, //fix atk pos
+                    "scale": 1/6
                 }
                 this.health = 10;
                 break;
@@ -149,10 +171,16 @@ class Enemy extends Entity {
                     "sheet": "/sprites/sprint_1/medium_enemy_400x400.png",
                     "walk_start": 2,
                     "walk_end": 12,
+                    "walk_speed": 3,
                     "jump": 1,
                     "atk_sheet": "/sprites/sprint_1/medium_enemy_atk_580x400.png",
                     "atk_start": 0,
-                    "atk_end": 11
+                    "atk_end": 11,
+                    "sprite_size": [400,400],
+                    "walk_pos_delta": 30,
+                    "atk_sprite_size": [580, 400],
+                    "atk_pos_delta": 30,
+                    "scale": 1/5
                 }
                 this.health = 20;
                 break;
@@ -161,10 +189,16 @@ class Enemy extends Entity {
                     "sheet": "/sprites/sprint_1/large_enemy.png",
                     "walk_start": 2,
                     "walk_end": 10,
+                    "walk_speed": 0.5,
                     "jump": 1,
                     "atk_sheet": "/sprites/sprint_1/large_enemy_atk_800x700.png",
                     "atk_start": 0,
-                    "atk_end": 7
+                    "atk_end": 7,
+                    "sprite_size": [500,500],
+                    "walk_pos_delta": 115,
+                    "atk_sprite_size": [800,700],
+                    "atk_pos_delta": 180,
+                    "scale": 1/3
                 }
                 this.health = 30;
                 break;
@@ -174,35 +208,36 @@ class Enemy extends Entity {
     }
 
     load_enemies() {
+        let thisEnemyX = this.x - cameraX;
         switch (this.state) {
             case "walking":
                 if (this.direction == "R") {
                     image(
                         this.img0, //image
-                        this.x, //x
-                        this.y, //y
-                        320 * this.scale, //img h
-                        320 * this.scale, //img w
-                        320 * floor(this.enemy_frame),
-                        0,
-                        320,
-                        320
+                        thisEnemyX, //x
+                        this.y - this.sprite_info["walk_pos_delta"], //y
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
+                        this.sprite_info["sprite_size"][0] * floor(this.enemy_frame), //correct frame
+                        0, //i dont know what this variable is
+                        this.sprite_info["sprite_size"][0], //i dont know
+                        this.sprite_info["sprite_size"][0] //i dont know but it works
                     )
                 } else {
                     push();
-                    translate(320,0);
+                    translate(thisEnemyX + (320 * this.sprite_info["scale"]), this.y); //flips it while maintaining pos
                     scale(-1, 1);
                     image(
-                        this.img0, //image
-                        this.x, //x
-                        this.y, //y
-                        320 * this.scale, //img h
-                        320 * this.scale, //img w
-                        320 * floor(this.enemy_frame),
+                        this.img0,
                         0,
-                        320,
-                        320
-                    )
+                        0 - this.sprite_info["walk_pos_delta"],
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"],
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"],
+                        this.sprite_info["sprite_size"][0] * floor(this.enemy_frame),
+                        0,
+                        this.sprite_info["sprite_size"][0],
+                        this.sprite_info["sprite_size"][0]
+                    );
                     pop();
                 }
 
@@ -216,29 +251,29 @@ class Enemy extends Entity {
                 if (this.direction == "R") {
                     image(
                         this.img0, //image
-                        this.x, //x
-                        this.y, //y
-                        320 * this.scale, //img h
-                        320 * this.scale, //img w
-                        320 * floor(this.enemy_frame),
+                        thisEnemyX, //x
+                        this.y - this.sprite_info["walk_pos_delta"], //y
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
+                        this.sprite_info["sprite_size"][0] * floor(this.enemy_frame),
                         0,
-                        320,
-                        320
+                        this.sprite_info["sprite_size"][0],
+                        this.sprite_info["sprite_size"][0]
                     )
                 } else {
                     push();
-                    translate(320,0);
+                    translate(thisEnemyX + (320 * this.sprite_info["scale"]), 0);
                     scale(-1, 1);
                     image(
                         this.img0, //image
-                        this.x, //x
-                        this.y, //y
-                        320 * this.scale, //img h
-                        320 * this.scale, //img w
-                        320 * 1,
+                        0, //x
+                        0 - this.sprite_info["walk_pos_delta"], //y
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
+                        this.sprite_info["sprite_size"][0] * 1,
                         0,
-                        320,
-                        320
+                        this.sprite_info["sprite_size"][0],
+                        this.sprite_info["sprite_size"][0]
                     )
                     pop();
                 }
@@ -251,57 +286,59 @@ class Enemy extends Entity {
                 if (this.direction == "R") {
                     image(
                         this.img1, //image
-                        this.x, //x
-                        this.y, //y
-                        400 * this.scale, //img h
-                        400 * this.scale, //img w
-                        400 * floor(this.enemy_frame),
+                        thisEnemyX, //x
+                        this.y - this.sprite_info["atk_pos_delta"], //y
+                        this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], //img h
+                        this.sprite_info["atk_sprite_size"][1] * this.sprite_info["scale"], //img w
+                        this.sprite_info["atk_sprite_size"][0] * floor(this.enemy_frame),
                         0,
-                        400,
-                        400
+                        this.sprite_info["atk_sprite_size"][0],
+                        this.sprite_info["atk_sprite_size"][0]
                     )
                 } else {
                     push();
-                    translate(320,0);
+                    translate(thisEnemyX + (400 * this.sprite_info["scale"]),this.y);
                     scale(-1, 1);
                     image(
                         this.img1, //image
-                        this.x, //x
-                        this.y, //y
-                        400 * this.scale, //img h
-                        400 * this.scale, //img w
-                        400 * floor(this.enemy_frame),
+                        0, //x
+                        0 - this.sprite_info["atk_pos_delta"], //y
+                        this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], //img h
+                        this.sprite_info["atk_sprite_size"][1] * this.sprite_info["scale"], //img w
+                        this.sprite_info["atk_sprite_size"][0] * floor(this.enemy_frame),
                         0,
-                        400,
-                        400
+                        this.sprite_info["atk_sprite_size"][0],
+                        this.sprite_info["atk_sprite_size"][0]
                     )
                     pop();
                 }
-
                 if (this.enemy_frame > this.sprite_info["atk_end"]) {
                     this.enemy_frame = this.sprite_info["atk_start"];
                 }
 
-                break;
+            // case "still":
+            //     image(
+            //         this.img0, //image
+            //         this.x, //x
+            //         this.y, //y
+            //         320 * this.scale, //img h
+            //         320 * this.scale, //img w
+            //         320 * floor(this.enemy_frame) * 0,
+            //         0,
+            //         320,
+            //         320
+            //     )
+            //     break;
         }
         
     }
 
-    move_ya_body() {
+    moveAndJumpAndGravity() {
 
         this.yVel += gravity;
 
-        // if (this.y >= groundY) {
-        //     this.y = groundY;
-        //     this.yVel = 0;
-        //     this.onGround = true;
-        // } else {
-        //     this.onGround = false;
-        //     this.state = "jump";
-        // }
-
-        if (this.y >= groundY + 25) {
-            this.y = groundY + 25;
+        if (this.y >= groundY + 30) {
+            this.y = groundY + 30;
             this.yVel = 0;
             this.onGround = true;
             this.state = "walking";
@@ -309,20 +346,30 @@ class Enemy extends Entity {
             this.onGround = false;
             this.state = "jumping";
         }
+
         this.y += this.yVel
         this.x += this.xVel
     }
 
     intelligence () {
-        if (playerX - cameraX > this.x) {
-            this.xVel = 3;
+        if ((playerX - 50) > this.x) {
+            this.xVel = this.sprite_info["walk_speed"];
             this.direction = "R";
+        } else if ((playerX + 50) < this.x) {
+            this.xVel = this.sprite_info["walk_speed"] * -1;
+            this.direction = "L";
         } else {
-            this.xVel = -3;
-            //this.direction = "L";
-
+            this.state = "attack";
+            this.xVel = 0;
         }
-
     }
 
+    processHealth() {
+        //handle damage here
+        //and collision with attacks and whatnot
+    }
+
+    die() {
+        //death animation if u want one
+    }
 }

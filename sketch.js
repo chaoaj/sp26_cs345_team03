@@ -1,4 +1,6 @@
 let this_guy;
+let this_guy2;
+let this_guy3;
 
 let gameState = "music";
 let selectedClass = "";
@@ -361,6 +363,8 @@ function setup() {
 
 function preload() {
   this_guy = new Enemy("sml");
+  this_guy2 = new Enemy("med");
+  this_guy3 = new Enemy("lar");
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
   fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
   
