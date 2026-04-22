@@ -1,0 +1,93 @@
+This txt file will describe the formatting for how the dialogue
+files will be read.
+
+There will be four main functions of the dialogue files
+
+1. Dialogue printing
+    Dialogue will have a name for each person talking
+        Lines with characters speaking will start with #.
+        The name of the speaker will be denoted by the ":" symbol. Anything
+        before this symbol is read as the character name. For example
+        Village Leader: There is no one who can help us but you!
+        "Village Leader" will be read as the name.
+    Dialogue can be printed at different speeds
+        Differing speeds will be denoted by "*". For example,
+        *8
+        will be read as change the talk speed to a character read every 8 frames
+    Dialogue can skip and merge different paths
+        If it is necessary to merge two dialogue paths into one at some point, it can be denoted with a line number
+        and a % to start the line.
+        For example:
+
+        Trader: Anywho, enough of all that.
+        %37
+
+        (Line 37) Trader: How'd you end up here?
+
+        In this example, the reader skips to line 37 of the txt document.
+2. Dialogue options
+    Dialogue will have different choices
+        Dialogue choice lines will start with "=".
+        Choices will be marked using a [<a>, <b>, <c>] format. For example
+        [<I'll help you!>|<What's going on?>|<This is none of my business, sorry>]
+        In this, "I'll help you!", "What's going on?", and "This is none of my business, sorry"
+        are all dialogue options. The delimiter is "|".
+        The dialogue itself is read from < to >.
+    Dialogue choices will have different conversation paths
+        Different paths will be marked by the line # at which the dialogue option leads.
+        For example, if the options on the previous line were [<a>, <b>, <c>], the following lines
+        would map the options, in order, to their respective lines. If a mapped to line 15, b
+        mapped to line 50, and c mapped to line 300, the following lines would be:
+        15
+        50
+        300
+3. Triggering game action/animations
+    Dialogue can be breaken away from for scenes and returned to
+        Breaks in conversation to show something on screen will be denoted as
+        ;
+        For example:
+
+        Trader: They could really use your help.
+        Player: But you just told me that they'd be alright, right?
+        ;
+        Trader: Maybe you should stay
+
+        This has dialogue between a npc named "Trader" and the player.
+        There is a break in conversation, at which the text ceases, something is shown
+        on screen, and afterwards the dialogue continues on the next line.
+        For the sake of preformatting conversation, text can also be put in between
+        two semicolons denoted as
+        ;-
+        text
+        -;
+        To serve as a description for the devs as to what will happen during the break. For example:
+        
+        Trader: They could really use your help.
+        Player: But you just told me that they'd be alright, right?
+        ;-
+        You try to pull your things back, but the Trader’s grip is tight
+        -;
+        Trader: Maybe you should stay
+
+        In this dialogue, the middle text with the description of the Trader's grip is not read
+        by the code, but acts as a reminder or description for the devs. The scene stops at ;-
+        and begins at -;.
+4. Differing text based on player choices
+    Based on choices, for example class or previous dialogue choices, text may differ
+    in ways that are small enough that only single words will need to be different.
+    In this case, different dialogues will be denoted by {a/b/c}. For example:
+
+    Child: Are you a {knight/wizard}? Thats so cool!!!
+
+    In this example, if the player class is knight, the dialogue will be
+    "Are you a knight?". The opposite is true for the mage class.
+    The coded reader will be responsible for keeping track of choices
+    and knowing what data should be checked. If an identifyer is necessary,
+    it can be denoted by {!identity/knight/wizard}, where if the first option the
+    code reads starts with "!", that is the identifyer the code will use to search
+    for the appropriate data.
+
+In general, the different paths can be hard for a dev to read, so for the sake of it being
+easier to read, comments can be denoted with // as the start of a line for descriptions.
+
+The end of a conversation, signaling that the dialogue box should be hidden, is marked with "~".

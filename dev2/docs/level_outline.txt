@@ -1,0 +1,103 @@
+﻿Intro:
+
+
+Menu/Start Screen
+
+
+After start is clicked, play expository text
+
+
+Player awakes next to a pond where fairies are flying
+
+
+A fairy wakes them up and there is short dialogue
+
+
+The player can talk to one or two other fairies with very short dialogue
+
+
+Player walks past the pond through a forest until they encounter an enemy who is fighting an npc
+
+
+Player has to fight and kill the enemy
+
+
+The NPC gives thanks and tells the player that they are from a nearby village which they lead the player to
+
+
+Level 1, Village:
+
+
+The player enters the village and can talk to NPC’s for lore and information
+
+
+Among other things, the NPC’s tell the player once they have talked to all the villagers they want to they should speak to the village leader
+
+
+The leader greets the player and asks them to help fight the goblins/enemies to help keep the village safe/turn the tide of the war
+
+
+Mid conversation goblins/enemies start to attack the village and the player is asked to fight them
+
+
+NPC’s run to their homes so that it is just the player fighting, and the player has to fight them in waves
+
+
+After the player has killed all of the attackers, the village leader comes out and congratulates the player
+
+
+The player asks where the goblins are coming from and the village leader tells the player of an invincible lich far to the north which the player would stand no chance against
+
+
+The player can choose to either accept this information and decide to stay in the village, which gives a fake happy ending to the game, or they can tell the leader they want to fight the lich anyways
+
+
+The leader continues to try to dissuade the player, until eventually he goes completely silent, as do all other villagers when the player tries to talk to them
+
+
+The villager crowd acts as a blockade to keep the player from leaving to the left of the screen
+
+
+A villager comes and asks the player for help as her daughter has fallen down a well, but the dialogue feels off
+
+
+When the player asks too many questions the villager goes quiet, and simply runs to the right side of the screen
+
+
+When the player is led to the well they are told to climb down it, at first with a false sense of urgency, then if the player continues to refuse to they are commanded to, or even pushed into it
+
+
+If the player willingly climbs down the well, halfway down the rope is cut from above
+
+
+The player falls for a long time and then finally lands
+
+
+Level 2, Underground Tower
+
+
+The player lands in a dark area which they walk through until they find a single torch and a door
+
+
+When they walk through the door they enter a winding series of stairs and platforms that move upwards
+
+
+The player must wall jump, use platforms, and fight enemies to eventually reach the top of the tower
+
+
+The tower has flying and jumping enemies to better fit the level
+
+
+The player can find dusty bookcases or withered skeletons whos ghosts can speak to the player to tell them lore
+
+
+Level 3, Boss Fight
+
+
+The player reaches the top of the tower and comes out of the well, except the town is gone, the sky is dark, and everything is silent
+
+
+The nightmare demon appears as the sky turns red and the boss fight begins
+
+
+Upon defeating the nightmare demon, the player wakes up and the credits roll

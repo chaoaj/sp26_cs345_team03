@@ -1,0 +1,26 @@
+#Fairy: Look who finally woke up!
+#Fairy: Oh, poor lost soul... your eyes are still sunken into some grim other world, aren't they?
+#Fairy: I bet'chya had some pretty bad dreams, huh?
+=Player: [They felt so real...|Where am I?]
+7
+17
+#Fairy: And yet this feels so much realer! 
+#Fairy: I don't think you need to worry about that for now, dreamer. You can worry about facing them when it's time for bed.
+#Fairy: You've been lying here quite a while though! You've been sleeping here for years now!
+#Player: Years??
+#N: The fairy laughs.
+#Fairy: Well, we fairies don't live life with a mortal's momentum. 
+#Fairy: Seconds can last decades, years can move so quick they flow in on themselves. 
+#Fairy: Time isn't so restrictive for us, I guess you could say.
+%20
+//continuation of line 4
+#Fairy: You've been here so long it'd probably be better to ask where else there is to go! 
+#Fairy: Your slumber lasted so long we fairies worried you might dream your life away, sleepy head.
+%9
+#Player: ...Right...
+#Player: ........I think I need to get going
+#Fairy: We think so too. 
+#Fairy: We hope you find what you're looking for!
+#Player: I'm looking for something?
+#Fairy: Well why else would you be here, silly?
+~
