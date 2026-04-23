@@ -1425,7 +1425,7 @@ function drawIntroWorld() {
   drawIntroForestArea();
   drawIntroVillagePathArea();
   drawAmbientFireflies();
-  drawForegroundPlants();
+  drawIntroStaticGrass();
   pop();
 }
 
@@ -1521,15 +1521,6 @@ function drawIntroPondArea() {
   ellipse(274, gY - 37, 14, 10);
   ellipse(388, gY - 42, 20, 14);
 
-  for (let i = 0; i < 8; i++) {
-    let gx = 170 + i * 34;
-    drawGrassClump(gx, gY - 27, 0.9);
-  }
-
-  for (let i = 0; i < 5; i++) {
-    let gx = 395 + i * 26;
-    drawGrassClump(gx, gY - 26, 0.75);
-  }
 }
 
 function drawGrassClump(x, y, s) {
@@ -1600,14 +1591,23 @@ function drawAmbientFireflies() {
   }
 }
 
-function drawForegroundPlants() {
+function drawIntroStaticGrass() {
   let gY = (3 * height) / 4;
-  for (let i = 0; i < 24; i++) {
-    let gx = cameraX + i * 45;
+  noStroke();
+  for (let i = 0; i < width + 32; i += 24) {
+    let gx = i - 8;
+    let h1 = 16 + (i % 5) * 2;
+    let h2 = 20 + (i % 7);
+    let h3 = 14 + (i % 4) * 2;
 
-    fill(18, 28, 20, 180);
-    triangle(gx, gY - 2, gx + 10, gY - 40, gx + 18, gY - 2);
-    triangle(gx + 12, gY - 2, gx + 22, gY - 46, gx + 30, gY - 2);
+    fill(28, 64, 32, 170);
+    triangle(gx, gY + 3, gx + 5, gY - h1, gx + 10, gY + 3);
+
+    fill(36, 84, 42, 175);
+    triangle(gx + 7, gY + 3, gx + 13, gY - h2, gx + 19, gY + 3);
+
+    fill(48, 104, 52, 160);
+    triangle(gx + 14, gY + 3, gx + 18, gY - h3, gx + 22, gY + 3);
   }
 }
 
