@@ -11,6 +11,7 @@ let quitButton;
 let backButton;
 let level1DevButton;
 let testLevelButton;
+let bossLevelButton;
 let volumeSlider;
 let mouseReleased = false;
 //-1 means not waiting, 0 means waiting with no click
@@ -348,6 +349,19 @@ function setup() {
     window.open(path + "?class=" + encodeURIComponent(classParam), "_blank", "noopener,noreferrer");
   });
   testLevelButton.hide();
+
+  bossLevelButton = createButton("Boss Level");
+  bossLevelButton.size(168, 38);
+  bossLevelButton.position(width - 184, 190);
+  styleSecondaryButton(bossLevelButton);
+  bossLevelButton.mousePressed(function() {
+    let path = window.location.pathname.indexOf("dev/index.html") >= 0
+      ? "levels/boss_level.html"
+      : "dev/levels/boss_level.html";
+    let classParam = selectedClass === "Mage" ? "Mage" : "Melee";
+    window.location.href = path + "?class=" + encodeURIComponent(classParam);
+  });
+  bossLevelButton.hide();
 
   volumeSlider = createSlider(0, 100, 50);
   volumeSlider.position(width / 2 - 190/2, 300);
@@ -973,6 +987,7 @@ function updateUI() {
   backButton.hide();
   level1DevButton.hide();
   testLevelButton.hide();
+  bossLevelButton.hide();
   volumeSlider.hide();
   mageButton.hide();
   meleeButton.hide();
@@ -995,6 +1010,8 @@ function updateUI() {
     level1DevButton.position(width - 184, 98);
     testLevelButton.show();
     testLevelButton.position(width - 184, 144);
+    bossLevelButton.show();
+    bossLevelButton.position(width - 184, 190);
   } else if (gameState === "settings") {
     backButton.show();
     volumeSlider.show();
@@ -1131,6 +1148,7 @@ function windowResized() {
   layoutClassButtons();
   level1DevButton.position(width - 184, 98);
   testLevelButton.position(width - 184, 144);
+  bossLevelButton.position(width - 184, 190);
   volumeSlider.position(width / 2 - 95, height * 0.35);
   musicButton.position((width / 2) - 150, (height / 2) - 50);
 }
@@ -1419,7 +1437,7 @@ function mousePressed() {
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;
   // ignore clicks where the Level 1 (dev) button sits (below objective panel)
-  if (mouseX > width - 200 && mouseY > 88 && mouseY < 148) return;
+  if (mouseX > width - 200 && mouseY > 88 && mouseY < 234) return;
   if (!mouseReleased) return;
   if (stamina <= 0 || magic <= 0) return;
   if (isCharging) return;
