@@ -322,7 +322,7 @@ function setup() {
     updateUI();
   });
 
-  // TEMP: open standalone Level 1 prototype in a new tab (remove when merged into main sketch)
+  // Open Level 1 in the same tab so gameplay stays in one site flow.
   level1DevButton = createButton("Level 1 (dev)");
   level1DevButton.size(168, 38);
   level1DevButton.position(width - 184, 98);
@@ -332,7 +332,7 @@ function setup() {
       ? "levels/your_level.html"
       : "dev/levels/your_level.html";
     let classParam = selectedClass === "Mage" ? "Mage" : "Melee";
-    window.open(path + "?class=" + encodeURIComponent(classParam), "_blank", "noopener,noreferrer");
+    window.location.href = path + "?class=" + encodeURIComponent(classParam);
   });
   level1DevButton.hide();
 
@@ -359,6 +359,28 @@ function setup() {
   layoutMenuButtons();
   layoutClassButtons();
   updateUI();
+
+  // Allow direct return links into intro level from sub-pages.
+  try {
+    let params = new URLSearchParams(window.location.search);
+    let startState = params.get("state");
+    let urlClass = params.get("class");
+    if (urlClass === "Mage" || urlClass === "Melee") {
+      selectedClass = urlClass;
+    }
+    if (startState === "introLevel" && (selectedClass === "Mage" || selectedClass === "Melee")) {
+      initIntroLevel(true);
+      gameState = "introLevel";
+      musicButton.hide();
+      musicIntro.stop();
+      musicDream.stop();
+      musicDream.loop();
+      mouseReleased = false;
+      updateUI();
+    }
+  } catch (e) {
+    // Ignore malformed URL params.
+  }
 }
 
 function preload() {
@@ -471,8 +493,8 @@ function keyReleased() {
   }
 }
 
-function initIntroLevel() {
-  introStage = 0;
+function initIntroLevel(skipDialogue = false) {
+  introStage = skipDialogue ? 4 : 0;
   cameraX = 0;
 
   HP = 100;
@@ -489,10 +511,19 @@ function initIntroLevel() {
   introPrompt = "Click to continue";
   introObjective = "Begin";
 
-  //init test dialogue
-  //dialogue = new Dialogue("This is test dialogue. This should print on the screen letter by letter if it is working.")
-  initDiaFile();
-  isDialogue = true;
+  if (skipDialogue) {
+    introDialogue = "Placeholder next area.";
+    introPrompt = "";
+    introObjective = "Continue";
+    isDialogue = false;
+    entityWaitingForMouse = -1;
+    if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
+  } else {
+    //init test dialogue
+    //dialogue = new Dialogue("This is test dialogue. This should print on the screen letter by letter if it is working.")
+    initDiaFile();
+    isDialogue = true;
+  }
   // init player
   groundY = (height * 3 / 4) - drawSize;
   playerX = 200;
@@ -526,6 +557,18 @@ function initIntroLevel() {
   wasWalking = false;
   if (sfxWalking && sfxWalking.isPlaying()) sfxWalking.stop();
   if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
+
+  // Recreate intro enemies whenever intro level is entered.
+  this_guy = new Enemy("sml");
+  this_guy2 = new Enemy("med");
+  this_guy3 = new Enemy("lar");
+
+  // Returning from Level 1 should be immediately playable with enemies present.
+  if (skipDialogue) {
+    this_guy.spawnedIn = true;
+    this_guy2.spawnedIn = true;
+    this_guy3.spawnedIn = true;
+  }
 }
 
 function drawHUD() {
@@ -923,6 +966,7 @@ function styleSecondaryButton(button) {
 }
 
 function updateUI() {
+  musicButton.hide();
   startButton.hide();
   settingsButton.hide();
   quitButton.hide();
@@ -933,7 +977,9 @@ function updateUI() {
   mageButton.hide();
   meleeButton.hide();
 
-  if (gameState === "menu") {
+  if (gameState === "music") {
+    musicButton.show();
+  } else if (gameState === "menu") {
     startButton.show();
     settingsButton.show();
     quitButton.show();

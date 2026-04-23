@@ -38,6 +38,7 @@ const frameHeight = 320;
 const drawSize = 80;
 const gravity = 0.6;
 const jumpForce = -14;
+const moveSpeed = 5; // match intro level movement speed
 
 let attackType = "";
 let attackFrame = 0;
@@ -48,6 +49,10 @@ let magic = 100;
 let maxMagic = 100;
 let stamina = 100;
 let maxStamina = 100;
+let HP = 100;
+let maxHP = 100;
+
+let backButton;
 
 // mage projectile system
 let mageProjectiles = [];
@@ -81,7 +86,7 @@ function syncClassAssets() {
 }
 
 function setup() {
-  createCanvas(960, 540);
+  createCanvas(windowWidth, windowHeight);
   let urlClass = null;
   try {
     let params = new URLSearchParams(window.location.search);
@@ -93,10 +98,20 @@ function setup() {
     selectedClass = urlClass;
   }
   syncClassAssets();
+  HP = 100;
+  maxHP = 100;
   groundY = height - 110 - drawSize * 0.35;
   playerY = groundY;
   playerX = 320;
   cameraX = 0;
+
+  backButton = createButton("Back");
+  backButton.size(98, 40);
+  backButton.position(26, 22);
+  styleBackButton(backButton);
+  backButton.mousePressed(function() {
+    window.location.href = "../../index.html?state=introLevel&class=" + encodeURIComponent(selectedClass);
+  });
 
   for (let i = 0; i < 14; i++) {
     smokePuffs.push({
@@ -110,6 +125,13 @@ function setup() {
   }
 }
 
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  groundY = height - 110 - drawSize * 0.35;
+  if (playerY > groundY) playerY = groundY;
+  if (backButton) backButton.position(26, 22);
+}
+
 function draw() {
   updatePlayer();
   updateMageProjectiles();
@@ -117,7 +139,6 @@ function draw() {
   drawPlayer();
   drawMageProjectiles();
   drawHUD();
-  drawControlsHint();
 }
 
 function drawControlsHint() {
@@ -137,14 +158,6 @@ function drawControlsHint() {
 function keyPressed() {
   if ((key === "w" || key === "W") && onGround) {
     velY = jumpForce;
-    return;
-  }
-  if (key === "m" || key === "M") {
-    selectedClass = selectedClass === "Mage" ? "Melee" : "Mage";
-    attackType = "";
-    attackFrame = 0;
-    attackTimer = 0;
-    syncClassAssets();
     return;
   }
   if ((key === "q" || key === "Q") && attackType === "" && !isCharging) {
@@ -186,12 +199,12 @@ function mousePressed() {
 function updatePlayer() {
   let moving = false;
   if (keyIsDown(68)) {
-    playerX += 5;
+    playerX += moveSpeed;
     moving = true;
     facingLeft = false;
   }
   if (keyIsDown(65)) {
-    playerX -= 5;
+    playerX -= moveSpeed;
     moving = true;
     facingLeft = true;
   }
@@ -1065,11 +1078,13 @@ function drawChargeEffect() {
 
 function drawHUD() {
   let x = 22;
-  let y = 16;
+  let y = 76;
+
+  drawBar(x, y, 180, 14, HP, maxHP, color(0, 64, 0), "HP");
   if (selectedClass === "Mage") {
-    drawBar(x, y, 160, 12, magic, maxMagic, color(0, 0, 80), "MP");
+    drawBar(x, y + 26, 180, 14, magic, maxMagic, color(0, 0, 80), "MP");
   } else {
-    drawBar(x, y, 160, 12, stamina, maxStamina, color(180, 140, 0), "ST");
+    drawBar(x, y + 26, 180, 14, stamina, maxStamina, color(253, 216, 10), "ST");
   }
 }
 
@@ -1080,9 +1095,24 @@ function drawBar(x, y, w, h, val, maxVal, col, label) {
   rect(x, y, w, h, 4);
   fill(col);
   rect(x, y, fw, h, 4);
+  fill(255, 255, 255, 22);
+  rect(x, y, fw, h / 2, 4);
   fill(220, 220, 230);
   textFont("Georgia");
-  textSize(11);
+  textSize(12);
   textAlign(LEFT, CENTER);
   text(label, x + w + 8, y + h / 2);
+}
+
+function styleBackButton(button) {
+  button.style("background", "rgba(14, 15, 24, 0.92)");
+  button.style("color", "#f2f2f7");
+  button.style("border", "1px solid rgba(205, 210, 235, 0.18)");
+  button.style("font-family", "Georgia");
+  button.style("font-size", "18px");
+  button.style("border-radius", "8px");
+  button.style("box-shadow", "0 0 0 rgba(0,0,0,0)");
+  button.style("cursor", "pointer");
+  button.style("text-align", "center");
+  button.style("transition", "all 0.16s ease");
 }
