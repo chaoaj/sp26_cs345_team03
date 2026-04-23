@@ -1098,6 +1098,12 @@ function drawIntroLevelScreen() {
   }
 
   if (!(isDialogue)) {
+    // Once intro dialogue finishes, immediately activate intro enemies.
+    if (this_guy && this_guy2 && this_guy3 && !this_guy.spawnedIn && !this_guy2.spawnedIn && !this_guy3.spawnedIn) {
+      this_guy.spawnedIn = true;
+      this_guy2.spawnedIn = true;
+      this_guy3.spawnedIn = true;
+    }
     updateIntroLevel();
     updatePlayer();
     updateMageProjectiles();
