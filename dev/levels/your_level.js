@@ -706,63 +706,80 @@ function drawCottage(wx, baseY, houseW, houseH, wall, roof, door, chimney) {
 
 function drawVillageResidentialRows() {
   let base = villageStreetY();
+  const HOUSE_SCALE = 1.16;
+  const HOUSE_SPREAD = 1.16;
+  const spreadFrom = (anchor, x) => anchor + (x - anchor) * HOUSE_SPREAD;
+  const w = (value) => value * HOUSE_SCALE;
+  const h = (value) => value * HOUSE_SCALE;
 
-  drawCottage(38, base, 112, 118, color(102, 98, 112), color(66, 62, 78), color(48, 44, 58), true);
-  drawCottage(158, base, 108, 114, color(94, 90, 104), color(62, 58, 74), color(44, 40, 54), false);
-  drawCottage(276, base, 118, 122, color(108, 104, 118), color(70, 66, 82), color(50, 46, 60), true);
-  drawCottage(398, base, 114, 118, color(98, 94, 108), color(64, 60, 76), color(46, 42, 56), true);
-  drawCottage(518, base, 120, 124, color(106, 102, 116), color(68, 64, 80), color(48, 44, 58), false);
-  drawCottage(646, base, 110, 116, color(92, 88, 102), color(60, 56, 72), color(42, 38, 52), true);
+  drawCottage(spreadFrom(38, 38), base, w(112), h(118), color(102, 98, 112), color(66, 62, 78), color(48, 44, 58), true);
+  drawCottage(spreadFrom(38, 158), base, w(108), h(114), color(94, 90, 104), color(62, 58, 74), color(44, 40, 54), false);
+  drawCottage(spreadFrom(38, 276), base, w(118), h(122), color(108, 104, 118), color(70, 66, 82), color(50, 46, 60), true);
+  drawCottage(spreadFrom(38, 398), base, w(114), h(118), color(98, 94, 108), color(64, 60, 76), color(46, 42, 56), true);
+  drawCottage(spreadFrom(38, 518), base, w(120), h(124), color(106, 102, 116), color(68, 64, 80), color(48, 44, 58), false);
+  drawCottage(spreadFrom(38, 646), base, w(110), h(116), color(92, 88, 102), color(60, 56, 72), color(42, 38, 52), true);
 
-  drawCottage(1910, base, 116, 118, color(100, 96, 110), color(64, 60, 76), color(46, 42, 56), true);
-  drawCottage(2032, base, 114, 120, color(96, 92, 106), color(62, 58, 74), color(44, 40, 54), false);
-  drawCottage(2152, base, 120, 122, color(104, 100, 114), color(66, 62, 80), color(48, 44, 58), true);
-  drawCottage(2280, base, 112, 116, color(90, 86, 100), color(58, 54, 70), color(40, 36, 50), true);
-  drawCottage(2398, base, 118, 120, color(102, 98, 112), color(64, 60, 78), color(46, 42, 56), false);
-  drawCottage(2524, base, 115, 118, color(98, 94, 108), color(62, 58, 76), color(44, 40, 54), true);
-  drawCottage(2645, base, 122, 124, color(108, 104, 118), color(68, 64, 82), color(48, 44, 60), true);
-  drawCottage(2773, base, 110, 116, color(92, 88, 102), color(60, 56, 72), color(42, 38, 52), false);
-  drawCottage(2891, base, 118, 120, color(100, 96, 110), color(64, 60, 78), color(46, 42, 56), true);
-  drawCottage(3015, base, 116, 118, color(96, 92, 106), color(62, 58, 76), color(44, 40, 54), true);
-  drawCottage(3137, base, 114, 116, color(94, 90, 104), color(60, 56, 74), color(42, 38, 52), false);
-  drawCottage(3255, base, 118, 120, color(102, 98, 112), color(64, 60, 78), color(46, 42, 56), true);
-  drawCottage(3381, base, 120, 122, color(106, 102, 116), color(66, 62, 80), color(48, 44, 58), true);
+  drawCottage(spreadFrom(1910, 1910), base, w(116), h(118), color(100, 96, 110), color(64, 60, 76), color(46, 42, 56), true);
+  drawCottage(spreadFrom(1910, 2032), base, w(114), h(120), color(96, 92, 106), color(62, 58, 74), color(44, 40, 54), false);
+  drawCottage(spreadFrom(1910, 2152), base, w(120), h(122), color(104, 100, 114), color(66, 62, 80), color(48, 44, 58), true);
+  drawCottage(spreadFrom(1910, 2280), base, w(112), h(116), color(90, 86, 100), color(58, 54, 70), color(40, 36, 50), true);
+  drawCottage(spreadFrom(1910, 2398), base, w(118), h(120), color(102, 98, 112), color(64, 60, 78), color(46, 42, 56), false);
+  drawCottage(spreadFrom(1910, 2524), base, w(115), h(118), color(98, 94, 108), color(62, 58, 76), color(44, 40, 54), true);
+  drawCottage(spreadFrom(1910, 2645), base, w(122), h(124), color(108, 104, 118), color(68, 64, 82), color(48, 44, 60), true);
+  drawCottage(spreadFrom(1910, 2773), base, w(110), h(116), color(92, 88, 102), color(60, 56, 72), color(42, 38, 52), false);
+  drawCottage(spreadFrom(1910, 2891), base, w(118), h(120), color(100, 96, 110), color(64, 60, 78), color(46, 42, 56), true);
+  drawCottage(spreadFrom(1910, 3015), base, w(116), h(118), color(96, 92, 106), color(62, 58, 76), color(44, 40, 54), true);
+  drawCottage(spreadFrom(1910, 3137), base, w(114), h(116), color(94, 90, 104), color(60, 56, 74), color(42, 38, 52), false);
+  drawCottage(spreadFrom(1910, 3255), base, w(118), h(120), color(102, 98, 112), color(64, 60, 78), color(46, 42, 56), true);
+  drawCottage(spreadFrom(1910, 3381), base, w(120), h(122), color(106, 102, 116), color(66, 62, 80), color(48, 44, 58), true);
 }
 
 function drawVillageWorkshopsAndBarn() {
   let base = villageStreetY();
+  const BUILDING_SCALE = 1.08;
   let bx = 1188;
-  let bw = 155;
-  let bh = 98;
+  let bw = 155 * BUILDING_SCALE;
+  let bh = 98 * BUILDING_SCALE;
   fill(40, 38, 46);
   rect(bx, base - 8, bw, 10);
   fill(72, 68, 78);
   rect(bx, base - bh, bw, bh - 8);
   fill(48, 42, 52);
   beginShape();
-  vertex(bx - 6, base - bh);
-  vertex(bx + bw * 0.5, base - bh - 38);
-  vertex(bx + bw + 6, base - bh);
+  vertex(bx - 6 * BUILDING_SCALE, base - bh);
+  vertex(bx + bw * 0.5, base - bh - 38 * BUILDING_SCALE);
+  vertex(bx + bw + 6 * BUILDING_SCALE, base - bh);
   endShape(CLOSE);
   fill(34, 30, 38);
   rect(bx + bw * 0.38, base - bh * 0.55, bw * 0.28, bh * 0.55, 2);
 
   let barnX = 4020;
+  let barnW = 200 * BUILDING_SCALE;
+  let barnH = 125 * BUILDING_SCALE;
+  let barnRoofH = 60 * BUILDING_SCALE;
   fill(52, 44, 48);
-  rect(barnX, base - 10, 200, 12);
+  rect(barnX, base - 10, barnW, 12);
   fill(78, 62, 58);
-  rect(barnX, base - 135, 200, 125);
+  rect(barnX, base - (barnH + 10), barnW, barnH);
   fill(44, 36, 42);
-  triangle(barnX - 8, base - 135, barnX + 100, base - 195, barnX + 208, base - 135);
+  triangle(
+    barnX - 8 * BUILDING_SCALE,
+    base - (barnH + 10),
+    barnX + barnW * 0.5,
+    base - (barnH + 10) - barnRoofH,
+    barnX + barnW + 8 * BUILDING_SCALE,
+    base - (barnH + 10)
+  );
   fill(32, 28, 34);
-  rect(barnX + 78, base - 95, 44, 95, 2);
+  rect(barnX + barnW * 0.39, base - barnH * 0.7, barnW * 0.22, barnH * 0.7, 2);
   fill(72, 38, 42, 90);
-  rect(barnX + 12, base - 110, 28, 40, 2);
-  rect(barnX + 160, base - 105, 24, 32, 2);
+  rect(barnX + barnW * 0.06, base - barnH * 0.82, barnW * 0.14, barnH * 0.3, 2);
+  rect(barnX + barnW * 0.8, base - barnH * 0.78, barnW * 0.12, barnH * 0.24, 2);
 }
 
 function drawVillageMarketRow() {
   let base = villageStreetY();
+  const MARKET_SCALE = 1.08;
   let stalls = [
     [1720, 0],
     [1810, 1],
@@ -773,28 +790,28 @@ function drawVillageMarketRow() {
   for (let st of stalls) {
     let sx = st[0];
     let flip = st[1];
-    let awningW = 88;
-    let poleX = flip ? sx + awningW - 8 : sx;
+    let awningW = 88 * MARKET_SCALE;
+    let poleX = flip ? sx + awningW - 8 * MARKET_SCALE : sx;
     fill(44, 40, 48);
-    rect(poleX, base - 62, 8, 62);
-    rect(poleX + 72, base - 62, 8, 62);
+    rect(poleX, base - 62 * MARKET_SCALE, 8 * MARKET_SCALE, 62 * MARKET_SCALE);
+    rect(poleX + 72 * MARKET_SCALE, base - 62 * MARKET_SCALE, 8 * MARKET_SCALE, 62 * MARKET_SCALE);
     if (flip) {
       fill(62, 48, 72, 230);
     } else {
       fill(48, 58, 68, 230);
     }
     if (flip) {
-      quad(sx, base - 58, sx + awningW, base - 78, sx + awningW, base - 52, sx, base - 42);
+      quad(sx, base - 58 * MARKET_SCALE, sx + awningW, base - 78 * MARKET_SCALE, sx + awningW, base - 52 * MARKET_SCALE, sx, base - 42 * MARKET_SCALE);
     } else {
-      quad(sx, base - 78, sx + awningW, base - 58, sx + awningW, base - 42, sx, base - 52);
+      quad(sx, base - 78 * MARKET_SCALE, sx + awningW, base - 58 * MARKET_SCALE, sx + awningW, base - 42 * MARKET_SCALE, sx, base - 52 * MARKET_SCALE);
     }
     fill(56, 50, 58);
-    rect(sx + 10, base - 48, awningW - 20, 36, 3);
+    rect(sx + 10 * MARKET_SCALE, base - 48 * MARKET_SCALE, awningW - 20 * MARKET_SCALE, 36 * MARKET_SCALE, 3);
     fill(42, 52, 50, 160);
-    ellipse(sx + 28, base - 32, 22, 14);
-    ellipse(sx + 58, base - 30, 18, 12);
+    ellipse(sx + 28 * MARKET_SCALE, base - 32 * MARKET_SCALE, 22 * MARKET_SCALE, 14 * MARKET_SCALE);
+    ellipse(sx + 58 * MARKET_SCALE, base - 30 * MARKET_SCALE, 18 * MARKET_SCALE, 12 * MARKET_SCALE);
     fill(64, 58, 68);
-    rect(sx + 34, base - 22, 20, 14, 2);
+    rect(sx + 34 * MARKET_SCALE, base - 22 * MARKET_SCALE, 20 * MARKET_SCALE, 14 * MARKET_SCALE, 2);
   }
 
   fill(48, 42, 50);
@@ -805,12 +822,13 @@ function drawVillageMarketRow() {
 
 function drawVillageHallAndBellTower() {
   let base = villageStreetY();
-  let hallX = 1368;
-  let hallW = 220;
-  let hallH = 168;
+  const CHURCH_SCALE = 1.2;
+  let hallW = 220 * CHURCH_SCALE;
+  let hallH = 168 * CHURCH_SCALE;
+  let hallX = 1368 - (hallW - 220) / 2;
   noStroke();
   fill(40, 38, 48);
-  rect(hallX, base - 10, hallW, 12);
+  rect(hallX, base - 10, hallW, 12 * CHURCH_SCALE);
   fill(88, 84, 96);
   rect(hallX, base - hallH, hallW, hallH - 10);
   stroke(lerpColor(color(88, 84, 96), color(0), 0.25));
@@ -819,7 +837,14 @@ function drawVillageHallAndBellTower() {
   line(hallX + hallW * 0.66, base - hallH, hallX + hallW * 0.66, base - 10);
   noStroke();
   fill(48, 42, 54);
-  triangle(hallX - 16, base - hallH, hallX + hallW / 2, base - hallH - 78, hallX + hallW + 16, base - hallH);
+  triangle(
+    hallX - 16 * CHURCH_SCALE,
+    base - hallH,
+    hallX + hallW / 2,
+    base - hallH - 78 * CHURCH_SCALE,
+    hallX + hallW + 16 * CHURCH_SCALE,
+    base - hallH
+  );
   fill(36, 32, 42);
   rect(hallX + hallW * 0.4, base - hallH * 0.55, hallW * 0.2, hallH * 0.55, 2);
   let hallWinW = hallW * 0.22;
@@ -828,13 +853,22 @@ function drawVillageHallAndBellTower() {
   drawFramedWindow(hallX + hallW * 0.12, hallWinY, hallWinW, hallWinH);
   drawFramedWindow(hallX + hallW * 0.66, hallWinY, hallWinW, hallWinH);
 
-  let tx = hallX + hallW * 0.5 - 22;
+  let towerW = 44 * CHURCH_SCALE;
+  let towerH = 120 * CHURCH_SCALE;
+  let tx = hallX + hallW * 0.5 - towerW / 2;
   fill(52, 48, 58);
-  rect(tx, base - hallH - 120, 44, 120);
+  rect(tx, base - hallH - towerH, towerW, towerH);
   fill(40, 36, 46);
-  triangle(tx - 6, base - hallH - 120, tx + 22, base - hallH - 165, tx + 50, base - hallH - 120);
+  triangle(
+    tx - 6 * CHURCH_SCALE,
+    base - hallH - towerH,
+    tx + towerW / 2,
+    base - hallH - 165 * CHURCH_SCALE,
+    tx + towerW + 6 * CHURCH_SCALE,
+    base - hallH - towerH
+  );
   fill(88, 92, 108, 100);
-  ellipse(tx + 22, base - hallH - 128, 18, 18);
+  ellipse(tx + towerW / 2, base - hallH - 128 * CHURCH_SCALE, 18 * CHURCH_SCALE, 18 * CHURCH_SCALE);
 }
 
 function drawVillagePlazaWellAndProps() {
