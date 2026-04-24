@@ -209,6 +209,26 @@ class Enemy extends Entity {
                 this.health = 30;
                 this.maxHealth = 30;
                 break;
+
+            case "boss":
+                this.sprite_info = {
+                    "sheet": "/sprites/sprint3/boss_70x70.png",
+                    "walk_start": 1,
+                    "walk_end": 5,
+                    "walk_speed": 4,
+                    "jump": 0,
+                    "atk_sheet": "/sprites/sprint3/boss_atk_70x70.png",
+                    "atk_start": 0,
+                    "atk_end": 8,
+                    "sprite_size": [700, 700],
+                    "walk_pos_delta": 295,
+                    "atk_sprite_size": [700, 700],
+                    "atk_pos_delta": 295,
+                    "scale": 1/2
+                }
+                this.health = 100;
+                this.maxHealth = 100;
+                break;
         }
         this.img0 = loadImage(this.sprite_info["sheet"]);
         this.img1 = loadImage(this.sprite_info["atk_sheet"]);
@@ -342,7 +362,7 @@ class Enemy extends Entity {
     }
 
     drawHealthBar() {
-        let entityWidth = this.sprite_info["sprite_size"][0] * this.sprite_info["scale"];
+        let ew = this.sprite_info["sprite_size"][0] * this.sprite_info["scale"];
         let screenX = this.x - cameraX;
         let screenY = this.y - this.sprite_info["walk_pos_delta"];
         let barW = ew;
