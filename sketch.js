@@ -12,7 +12,14 @@ let backButton;
 let level1DevButton;
 let testLevelButton;
 let bossLevelButton;
-let volumeSlider;
+
+let masterVolumeSlider;
+let musicVolumeSlider;
+let sfxVolumeSlider;
+
+let musicTrack = [];
+let sfxTrack = [];
+
 let mouseReleased = false;
 //-1 means not waiting, 0 means waiting with no click
 //1 means something is waiting and the mouse has been clicked
@@ -366,9 +373,10 @@ function setup() {
   });
   bossLevelButton.hide();
 
-  volumeSlider = createSlider(0, 100, 50);
-  volumeSlider.position(width / 2 - 190/2, 300);
-  volumeSlider.size(190);
+  masterVolumeSlider = createSlider(0, 100, 50);
+  musicVolumeSlider  = createSlider(0, 100, 50);
+  sfxVolumeSlider    = createSlider(0, 100, 50);
+  layoutVolumeSliders();
 
   buildMenuBgBuffer();
   buildIntroSkyBuffer();
@@ -415,18 +423,26 @@ function preload() {
   musicIntro = loadSound("sounds/music/introScreen.mp3");
   musicDream = loadSound("sounds/music/Dream3.wav");
 
-  sfxHeavyMage.setVolume(0.5);
-  sfxLightMage.setVolume(0.2);
-  sfxHeavyMelee.setVolume(0.3);
-  sfxLightMelee.setVolume(0.3);
 
   sfxWalking  = loadSound("sounds/walking hard_surface2.mp3");
   sfxBarFull  = loadSound("sounds/bar full.mp3");
   sfxTextLoop = loadSound("sounds/text loop.mp3");
-  sfxWalking.setVolume(0.35);
-  sfxBarFull.setVolume(0.5);
-  sfxTextLoop.setVolume(0.2);
+  
+  musicTrack = [
+  { sound: musicIntro, base: 0.4 },
+  { sound: musicDream, base: 0.4 },
+];
 
+sfxTrack = [
+  { sound: sfxLightMelee, base: 0.3 },
+  { sound: sfxHeavyMelee, base: 0.3 },
+  { sound: sfxLightMage,  base: 0.2 },
+  { sound: sfxHeavyMage,  base: 0.5 },
+  { sound: sfxAmbience,   base: 0.4 },
+  { sound: sfxWalking,    base: 0.35 },
+  { sound: sfxBarFull,    base: 0.5 },
+  { sound: sfxTextLoop,   base: 0.2 },
+];
 }
 
 function draw() {
@@ -454,6 +470,14 @@ function draw() {
     entityWaitingForMouse = 1;
   }
   frameCalls();
+
+  outputVolume(masterVolumeSlider.value() / 100);
+
+  let musicMul = musicVolumeSlider.value() / 100;
+  for (let t of musicTrack) t.sound.setVolume(t.base * musicMul);
+
+  let sfxMul = sfxVolumeSlider.value() / 100;
+  for (let t of sfxTrack) t.sound.setVolume(t.base * sfxMul);
 }
 
 function windowResized() {
@@ -894,6 +918,25 @@ function layoutMenuButtons() {
   quitButton.position(buttonX, startY + gap * 2);
 }
 
+function layoutVolumeSliders() {
+  let sliderW = 220;
+  let sliderX = width / 2 - sliderW / 2;
+  let startY  = height * 0.42;
+  let gap     = height * 0.075;
+
+  masterVolumeSlider.size(sliderW);
+  musicVolumeSlider.size(sliderW);
+  sfxVolumeSlider.size(sliderW);
+
+  masterVolumeSlider.position(sliderX, startY);
+  musicVolumeSlider.position(sliderX,  startY + gap);
+  sfxVolumeSlider.position(sliderX,    startY + gap * 2);
+}
+
+function volumeSliderY(index) {
+  return height * 0.42 + index * height * 0.075;
+}
+
 function layoutClassButtons() {
   let panelW = 590;
   let panelH = 470;
@@ -988,7 +1031,9 @@ function updateUI() {
   level1DevButton.hide();
   testLevelButton.hide();
   bossLevelButton.hide();
-  volumeSlider.hide();
+  masterVolumeSlider.hide();
+  musicVolumeSlider.hide();
+  sfxVolumeSlider.hide();  
   mageButton.hide();
   meleeButton.hide();
 
@@ -1014,7 +1059,9 @@ function updateUI() {
     bossLevelButton.position(width - 184, 190);
   } else if (gameState === "settings") {
     backButton.show();
-    volumeSlider.show();
+    masterVolumeSlider.show();
+    musicVolumeSlider.show();
+    sfxVolumeSlider.show();
   } else if (gameState === "quit") {
     backButton.show();
   }
@@ -1086,11 +1133,23 @@ function drawSettingsScreen() {
   textStyle(NORMAL);
   textSize(22);
   fill(214, 214, 226);
-  text("Volume", width / 2, 270);
+  text("Volume", width / 2, height * 0.33);
 
-  textSize(18);
-  text("Current: " + volumeSlider.value(), width / 2, 350);
+  textSize(16);
+  textAlign(CENTER, BOTTOM);
+  text("Main",  width / 2, volumeSliderY(0) - 4);
+  text("Music", width / 2, volumeSliderY(1) - 4);
+  text("SFX",   width / 2, volumeSliderY(2) - 4);
+
+  textAlign(CENTER, CENTER);
+  textSize(16);
+  
+  text("Main: "  + masterVolumeSlider.value() +
+      "   Music: " + musicVolumeSlider.value() +
+      "   SFX: "   + sfxVolumeSlider.value(),
+      width / 2, volumeSliderY(2) + height * 0.07);
 }
+
 
 function drawQuitScreen() {
   let p = drawSubScreenPanel();
@@ -1150,7 +1209,7 @@ function windowResized() {
   level1DevButton.position(width - 184, 98);
   testLevelButton.position(width - 184, 144);
   bossLevelButton.position(width - 184, 190);
-  volumeSlider.position(width / 2 - 95, height * 0.35);
+  layoutVolumeSliders();
   musicButton.position((width / 2) - 150, (height / 2) - 50);
 }
 
