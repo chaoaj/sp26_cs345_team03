@@ -41,6 +41,11 @@ let particles = [];
 let poemLines;
 let frames = 0;
 let fireflies = [];
+let fairySprite;
+let dialogueSprite;
+let npcSprites;
+let traderSprite;
+let skipDialogueButton;
 
 // pre-rendered static background buffers
 let menuBgBuffer;
@@ -220,6 +225,8 @@ function buildVignetteBuffer() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
+  traderSprite = npcSprites.get(40, 0, 240, 240);
+
   for (let i = 0; i < 80; i++) {
     stars.push({
       x: random(width),
@@ -259,7 +266,17 @@ function setup() {
   })
   musicButton.size(300, 100);
   musicButton.position((width / 2) - 150, (height / 2) - 50);
-
+  skipDialogueButton = createMusicButton("Skip Dialogue", 0, 0, function() {
+    diaIndex = 0;
+    nextDiaLine = 0;
+    isDialogue = false;
+    sfxTextLoop.stop();
+    skipDialogueButton.hide();
+    updateUI();
+  })
+  skipDialogueButton.hide();
+  skipDialogueButton.size(200, 80);
+  skipDialogueButton.position((width / 2) - 100, (height / 2) - 40)
 
   startButton = createMainMenuButton("Start", 0, 0, function() {
     gameState = "poem";
@@ -406,6 +423,8 @@ function preload() {
   this_guy3 = new Enemy("boss");
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
   fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
+  traderDia = loadStrings("./libraries/data/dialogue/trader.txt");
+  npcSprites = loadImage("sprites/sprint2/npcs_320x320.png");
   
   sfxLightMelee = loadSound("sounds/light swing.mp3");
   sfxHeavyMelee = loadSound("sounds/heavy swing.mp3");
@@ -451,7 +470,14 @@ function draw() {
     drawQuitScreen();
   }
   if (entityWaitingForMouse == 0 && mouseIsPressed) {
-    entityWaitingForMouse = 1;
+    if (isDialogue) {
+      if (mouseY > (height * 3) / 4) {
+        entityWaitingForMouse = 1;
+      }
+    } else {
+      entityWaitingForMouse = 1;
+    }
+    
   }
   frameCalls();
 }
@@ -529,12 +555,19 @@ function initIntroLevel(skipDialogue = false) {
     introPrompt = "";
     introObjective = "Continue";
     isDialogue = false;
+    skipDialogueButton.hide();
     entityWaitingForMouse = -1;
     if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
   } else {
     //init test dialogue
     //dialogue = new Dialogue("This is test dialogue. This should print on the screen letter by letter if it is working.")
+    fairySprite = loadImage("sprites/sprint2/fairy_320x320.png");
+    
+    
+
+    dialogueSprite = fairySprite
     initDiaFile();
+    skipDialogueButton.show();
     isDialogue = true;
   }
   // init player
@@ -1777,7 +1810,7 @@ function drawIntroDialogueBox() {
   textSize(15);
   if (isDialogue) {
     textAlign(LEFT, TOP);
-    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 80, 18);
+    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 60, 18);
     if (!dialogue.finished && sfxTextLoop && !sfxTextLoop.isPlaying()) sfxTextLoop.loop();
     else if (dialogue.finished && sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
   }
@@ -1789,6 +1822,14 @@ function drawIntroDialogueBox() {
     textSize(14);
     text(introPrompt, boxX + boxW - 18, boxY + boxH - 14);
   }
+   if (!(playerIsTalker)) {
+    fill(0, 0, 0)
+    rect(boxX + ((boxW * 47) / 56) - 10, boxY + (boxH / 5) - 10, 70, 70)
+    fill(50, 50, 50)
+    rect(boxX + ((boxW * 47) / 56) - 5, boxY + (boxH / 5) - 5, 60, 60)
+    image(dialogueSprite, boxX + ((boxW * 47) / 56), boxY + (boxH / 5), 50, 50);
+  }
+  
 }
 
 function printByWord(lineText, x, y, maxLength, textSpace) {

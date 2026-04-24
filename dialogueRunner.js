@@ -1,12 +1,14 @@
 let fairyDia;
+let traderDia;
 let nextDialogueReady = false;
 let diaIndex = 0;
 let nextDiaLine = 0;
 let currDiaFile;
 let leftRight;
+let playerIsTalker = false;
 
 function initDiaFile() {
-    currDiaFile = fairyDia;
+    currDiaFile = traderDia;
     printDialogue(currDiaFile[0], 0);
 }
 
@@ -17,9 +19,22 @@ function printDialogue(line, lineNumber) {
     if (marker === "#") {
         splitLine = line.split(": ")
         if (splitLine[0] === "#N") {
+            playerIsTalker = true;
             dialogue = new Dialogue(splitLine[1], "", false);
         } else {
-            dialogue = personDialogue(splitLine[0].substring(1) + ": ", splitLine[1]);
+            personTalking = splitLine[0].substring(1);
+            if (personTalking === "Fairy") {
+                playerIsTalker = false;
+                dialogueSprite = fairySprite;
+            } else if (personTalking === "Player") {
+                playerIsTalker = true;
+            } else if (personTalking === "Trader") {
+                playerIsTalker = false;
+                dialogueSprite = traderSprite;
+            } else {
+                playerIsTalker = false;
+            }
+            dialogue = personDialogue(personTalking + ": ", splitLine[1]);
         }
     }
 
@@ -55,7 +70,10 @@ function printDialogue(line, lineNumber) {
         nextDiaLine++;
     }
     if (marker === "~") {
+        diaIndex = 0;
+        nextDiaLine = 0;
         isDialogue = false;
+        skipDialogueButton.hide();
     }
     
 
