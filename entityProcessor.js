@@ -129,7 +129,9 @@ class Enemy extends Entity {
 
     //moves frame and then if game is not in the menu then will activate
     frameChange() {
+
         this.enemy_frame += 0.13;
+        
         if (gameState === "introLevel" && this.spawnedIn) {
             this.load_enemies();
             this.moveAndJumpAndGravity();
@@ -202,6 +204,23 @@ class Enemy extends Entity {
                 }
                 this.health = 30;
                 break;
+
+            case "boss":
+                this.sprite_info = {
+                    "sheet": "/sprites/sprint3/boss_70x70.png",
+                    "walk_start": 1,
+                    "walk_end": 5,
+                    "walk_speed": 4,
+                    "jump": 0,
+                    "atk_sheet": "/sprites/sprint3/boss_atk_70x70.png",
+                    "atk_start": 0,
+                    "atk_end": 8,
+                    "sprite_size": [700,700],
+                    "walk_pos_delta": 295,
+                    "atk_sprite_size": [700,700],
+                    "atk_pos_delta": 295,
+                    "scale": 1/2
+                }
         }
         this.img0 = loadImage(this.sprite_info["sheet"]);
         this.img1 = loadImage(this.sprite_info["atk_sheet"]);
@@ -240,11 +259,9 @@ class Enemy extends Entity {
                     );
                     pop();
                 }
-
                 if (this.enemy_frame > this.sprite_info["walk_end"]) {
-                    this.enemy_frame = this.sprite_info["walk_start"];
+                this.enemy_frame = this.sprite_info["walk_start"];
                 }
-
                 break;
             case "jumping":
                 //bow

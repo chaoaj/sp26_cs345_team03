@@ -400,7 +400,7 @@ function setup() {
 function preload() {
   this_guy = new Enemy("sml");
   this_guy2 = new Enemy("med");
-  this_guy3 = new Enemy("lar");
+  this_guy3 = new Enemy("boss");
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
   fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
   
@@ -575,7 +575,7 @@ function initIntroLevel(skipDialogue = false) {
   // Recreate intro enemies whenever intro level is entered.
   this_guy = new Enemy("sml");
   this_guy2 = new Enemy("med");
-  this_guy3 = new Enemy("lar");
+  this_guy3 = new Enemy("boss");
 
   // Returning from Level 1 should be immediately playable with enemies present.
   if (skipDialogue) {
