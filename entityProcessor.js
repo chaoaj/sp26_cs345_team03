@@ -1,6 +1,10 @@
 let entities = [];
 let entityCount = 0;
 
+function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+  return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+}
+
 //Function for methods that change in discrete steps over time
 //Example: a fireball moving or chars for dialogue to be added to text
 function frameCalls() {
@@ -167,6 +171,7 @@ class Enemy extends Entity {
                     "scale": 1/6
                 }
                 this.health = 10;
+                this.maxHealth = 10;
                 break;
             case "med":
                 this.sprite_info = {
@@ -185,6 +190,7 @@ class Enemy extends Entity {
                     "scale": 1/5
                 }
                 this.health = 20;
+                this.maxHealth = 20;
                 break;
             case "lar":
                 this.sprite_info = {
@@ -203,6 +209,27 @@ class Enemy extends Entity {
                     "scale": 1/3
                 }
                 this.health = 30;
+                this.maxHealth = 30;
+                break;
+
+            case "boss":
+                this.sprite_info = {
+                    "sheet": "/sprites/sprint3/boss_70x70.png",
+                    "walk_start": 1,
+                    "walk_end": 5,
+                    "walk_speed": 4,
+                    "jump": 0,
+                    "atk_sheet": "/sprites/sprint3/boss_atk_70x70.png",
+                    "atk_start": 0,
+                    "atk_end": 8,
+                    "sprite_size": [700, 700],
+                    "walk_pos_delta": 295,
+                    "atk_sprite_size": [700, 700],
+                    "atk_pos_delta": 295,
+                    "scale": 1/2
+                }
+                this.health = 100;
+                this.maxHealth = 100;
                 break;
 
             case "boss":
@@ -347,7 +374,28 @@ class Enemy extends Entity {
             //     )
             //     break;
         }
-        
+
+        this.drawHealthBar();
+    }
+
+    drawHealthBar() {
+        let ew = this.sprite_info["sprite_size"][0] * this.sprite_info["scale"];
+        let screenX = this.x - cameraX;
+        let screenY = this.y - this.sprite_info["walk_pos_delta"];
+        let barW = ew;
+        let barH = 6;
+        let barY = screenY - barH - 4;
+        let fillW = (this.health / this.maxHealth) * barW;
+
+        push();
+        noStroke();
+        fill(10, 12, 18, 200);
+        rect(screenX, barY, barW, barH, 2);
+        fill(160, 30, 30);
+        rect(screenX, barY, fillW, barH, 2);
+        fill(255, 255, 255, 22);
+        rect(screenX, barY, fillW, barH / 2, 2);
+        pop();
     }
 
     moveAndJumpAndGravity() {
@@ -382,11 +430,37 @@ class Enemy extends Entity {
     }
 
     processHealth() {
-        //handle damage here
-        //and collision with attacks and whatnot
+        let ew = this.sprite_info["sprite_size"][0] * this.sprite_info["scale"];
+        let ex = this.x;
+        let ey = this.y - this.sprite_info["walk_pos_delta"];
+
+        // melee attacks — light stops on first hit per enemy, heavy hits each once
+        for (let a of meleeAttacks) {
+            if (a.hitEnemies.includes(this)) continue;
+            if (rectsOverlap(ex, ey, ew, ew, a.x, a.y, a.hitW, a.hitH)) {
+                this.health -= a.damage;
+                a.hitEnemies.push(this);
+            }
+        }
+
+        // mage projectiles — light stops on first hit, heavy pierces all (hits each once)
+        for (let i = mageProjectiles.length - 1; i >= 0; i--) {
+            let p = mageProjectiles[i];
+            if (p.hitEnemies.includes(this)) continue;
+
+            let pSize = p.type === "light" ? p.drawW : lerp(100, 300, p.ratio);
+            let px = p.x - pSize / 2;
+            let py = p.y - pSize / 2;
+
+            if (rectsOverlap(ex, ey, ew, ew, px, py, pSize, pSize)) {
+                this.health -= p.damage;
+                p.hitEnemies.push(this);
+                if (p.type === "light") mageProjectiles.splice(i, 1);
+            }
+        }
     }
 
     die() {
-        //death animation if u want one
+        // placeholder for death SFX / particle effects
     }
 }

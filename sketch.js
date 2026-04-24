@@ -93,6 +93,9 @@ const attackFrameSpeed = 5; // draw frames per sprite frame
 // mage projectile system
 let mageProjectiles = [];
 
+// melee attack system
+let meleeAttacks = [];
+
 // Hollow Purple charge system (mage heavy)
 let isCharging = false;
 let chargeTime = 0;
@@ -477,11 +480,7 @@ function keyPressed() {
       isCharging = true;
       chargeTime = 0;
     } else {
-      attackType = "heavy";
-      attackFrame = 0;
-      attackTimer = 0;
-      sfxHeavyMelee.play();
-      stamina = max(0, stamina - 18);
+      spawnHeavyMeleeAttack();
     }
     return;
   }
@@ -568,6 +567,7 @@ function initIntroLevel(skipDialogue = false) {
   isCharging = false;
   chargeTime = 0;
   mageProjectiles = [];
+  meleeAttacks = [];
   wasWalking = false;
   if (sfxWalking && sfxWalking.isPlaying()) sfxWalking.stop();
   if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
@@ -1124,6 +1124,7 @@ function drawIntroLevelScreen() {
     updateIntroLevel();
     updatePlayer();
     updateMageProjectiles();
+    updateMeleeAttacks();
   }
   
   drawIntroWorld();
@@ -1309,7 +1310,8 @@ function spawnLightMageProjectile() {
     maxDist: 340,
     distTraveled: 0,
     frame: 0,
-    animTimer: 0
+    animTimer: 0,
+    hitEnemies: []
   });
 }
 
@@ -1334,8 +1336,61 @@ function fireHeavyMageProjectile() {
     distTraveled: 0,
     frame: 0,
     animTimer: 0,
-    ratio: ratio
+    ratio: ratio,
+    hitEnemies: []
   });
+}
+
+function spawnLightMeleeAttack() {
+  let dir = facingLeft ? -1 : 1;
+  let info = getAtkInfo("light");
+  meleeAttacks.push({
+    type: "light",
+    damage: 15,
+    dir: dir,
+    x: playerX + (dir > 0 ? drawSize * 0.4 : -(info.drawW + drawSize * 0.4)),
+    y: playerY + drawSize / 2 - info.drawH / 2,
+    hitW: info.drawW,
+    hitH: info.drawH,
+    hitEnemies: []
+  });
+  attackType = "light";
+  attackFrame = 0;
+  attackTimer = 0;
+  sfxLightMelee.play();
+  stamina = max(0, stamina - 9);
+}
+
+function spawnHeavyMeleeAttack() {
+  let dir = facingLeft ? -1 : 1;
+  let info = getAtkInfo("heavy");
+  meleeAttacks.push({
+    type: "heavy",
+    damage: 30,
+    dir: dir,
+    x: playerX + (dir > 0 ? drawSize * 0.4 : -(info.drawW + drawSize * 0.4)),
+    y: playerY + drawSize / 2 - info.drawH / 2,
+    hitW: info.drawW,
+    hitH: info.drawH,
+    hitEnemies: []
+  });
+  attackType = "heavy";
+  attackFrame = 0;
+  attackTimer = 0;
+  sfxHeavyMelee.play();
+  stamina = max(0, stamina - 18);
+}
+
+function updateMeleeAttacks() {
+  for (let i = meleeAttacks.length - 1; i >= 0; i--) {
+    let a = meleeAttacks[i];
+    // keep hitbox anchored to player position each frame
+    let xOff = a.dir > 0 ? drawSize * 0.4 : -(a.hitW + drawSize * 0.4);
+    a.x = playerX + xOff;
+    a.y = playerY + drawSize / 2 - a.hitH / 2;
+    // expire when animation finishes (attackType cleared by updatePlayer)
+    if (attackType === "") meleeAttacks.splice(i, 1);
+  }
 }
 
 function updateMageProjectiles() {
@@ -1448,11 +1503,7 @@ function mousePressed() {
         sfxLightMage.play();
         magic = max(0, magic - 9);
       } else {
-        attackType = "light";
-        attackFrame = 0;
-        attackTimer = 0;
-        sfxLightMelee.play();
-        stamina = max(0, stamina - 9);
+        spawnLightMeleeAttack();
       }
     }
   }
