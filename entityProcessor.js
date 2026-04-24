@@ -156,12 +156,12 @@ class Enemy extends Entity {
         switch (type) {
             case "sml":
                 this.sprite_info = {
-                    "sheet": "/sprites/sprint_1/small_enemy_320x320.png", //img path
+                    "sheet": "sprites/sprint_1/small_enemy_320x320.png", //img path
                     "walk_start": 2, //walk frame start
                     "walk_end": 9, //walk frame end
                     "walk_speed": 4,
                     "jump": 1, //jump frame
-                    "atk_sheet": "/sprites/sprint_1/small_enemy_atk_400x400.png", //img path
+                    "atk_sheet": "sprites/sprint_1/small_enemy_atk_400x400.png", //img path
                     "atk_start": 0, //atk frame start
                     "atk_end": 5, //atk frame end
                     "sprite_size": [320, 320], //w, h
@@ -175,12 +175,12 @@ class Enemy extends Entity {
                 break;
             case "med":
                 this.sprite_info = {
-                    "sheet": "/sprites/sprint_1/medium_enemy_400x400.png",
+                    "sheet": "sprites/sprint_1/medium_enemy_400x400.png",
                     "walk_start": 2,
                     "walk_end": 12,
                     "walk_speed": 3,
                     "jump": 1,
-                    "atk_sheet": "/sprites/sprint_1/medium_enemy_atk_580x400.png",
+                    "atk_sheet": "sprites/sprint_1/medium_enemy_atk_580x400.png",
                     "atk_start": 0,
                     "atk_end": 11,
                     "sprite_size": [400,400],
@@ -194,12 +194,12 @@ class Enemy extends Entity {
                 break;
             case "lar":
                 this.sprite_info = {
-                    "sheet": "/sprites/sprint_1/large_enemy.png",
+                    "sheet": "sprites/sprint_1/large_enemy.png",
                     "walk_start": 2,
                     "walk_end": 10,
                     "walk_speed": 0.5,
                     "jump": 1,
-                    "atk_sheet": "/sprites/sprint_1/large_enemy_atk_800x700.png",
+                    "atk_sheet": "sprites/sprint_1/large_enemy_atk_800x700.png",
                     "atk_start": 0,
                     "atk_end": 7,
                     "sprite_size": [500,500],
@@ -214,12 +214,12 @@ class Enemy extends Entity {
 
             case "boss":
                 this.sprite_info = {
-                    "sheet": "/sprites/sprint3/boss_70x70.png",
+                    "sheet": "sprites/sprint3/boss_70x70.png",
                     "walk_start": 1,
                     "walk_end": 5,
                     "walk_speed": 4,
                     "jump": 0,
-                    "atk_sheet": "/sprites/sprint3/boss_atk_70x70.png",
+                    "atk_sheet": "sprites/sprint3/boss_atk_70x70.png",
                     "atk_start": 0,
                     "atk_end": 8,
                     "sprite_size": [700, 700],
@@ -234,12 +234,12 @@ class Enemy extends Entity {
 
             case "boss":
                 this.sprite_info = {
-                    "sheet": "/sprites/sprint3/boss_70x70.png",
+                    "sheet": "sprites/sprint3/boss_70x70.png",
                     "walk_start": 1,
                     "walk_end": 5,
                     "walk_speed": 4,
                     "jump": 0,
-                    "atk_sheet": "/sprites/sprint3/boss_atk_70x70.png",
+                    "atk_sheet": "sprites/sprint3/boss_atk_70x70.png",
                     "atk_start": 0,
                     "atk_end": 8,
                     "sprite_size": [700,700],
