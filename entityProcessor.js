@@ -118,6 +118,7 @@ class Enemy extends Entity {
         this.y = 100; // spawn location
         this.xVel = 0; 
         this.yVel = 0; 
+        this.ableToJump;
 
         this.spawnedIn = false;
     }
@@ -126,6 +127,7 @@ class Enemy extends Entity {
     isAlive() {
         if (this.health <= 0) {
             this.die();
+            console.log("dead");
             return false;
         }
         return true;
@@ -136,7 +138,7 @@ class Enemy extends Entity {
 
         this.enemy_frame += 0.13;
         
-        if (gameState === "introLevel" && this.spawnedIn) {
+        if (gameState === "introLevel" && this.spawnedIn && this.isAlive()) {
             this.load_enemies();
             this.moveAndJumpAndGravity();
             this.intelligence();
@@ -165,13 +167,14 @@ class Enemy extends Entity {
                     "atk_start": 0, //atk frame start
                     "atk_end": 5, //atk frame end
                     "sprite_size": [320, 320], //w, h
-                    "walk_pos_delta": 0, //fix walking pos
+                    "walk_pos_delta": -30, //fix walking pos
                     "atk_sprite_size": [400,400], //w, h of atk
-                    "atk_pos_delta": 15, //fix atk pos
+                    "atk_pos_delta": -15, //fix atk pos
                     "scale": 1/6
                 }
                 this.health = 10;
                 this.maxHealth = 10;
+                this.ableToJump = true;
                 break;
             case "med":
                 this.sprite_info = {
@@ -184,32 +187,35 @@ class Enemy extends Entity {
                     "atk_start": 0,
                     "atk_end": 11,
                     "sprite_size": [400,400],
-                    "walk_pos_delta": 30,
+                    "walk_pos_delta": -5,
                     "atk_sprite_size": [580, 400],
-                    "atk_pos_delta": 30,
+                    "atk_pos_delta": -5,
                     "scale": 1/5
                 }
                 this.health = 20;
                 this.maxHealth = 20;
+                this.ableToJump = true;
+
                 break;
             case "lar":
                 this.sprite_info = {
                     "sheet": "sprites/sprint_1/large_enemy.png",
                     "walk_start": 2,
                     "walk_end": 10,
-                    "walk_speed": 0.5,
+                    "walk_speed": 1,
                     "jump": 1,
                     "atk_sheet": "sprites/sprint_1/large_enemy_atk_800x700.png",
                     "atk_start": 0,
                     "atk_end": 7,
                     "sprite_size": [500,500],
-                    "walk_pos_delta": 115,
+                    "walk_pos_delta": 80,
                     "atk_sprite_size": [800,700],
-                    "atk_pos_delta": 180,
+                    "atk_pos_delta": 150,
                     "scale": 1/3
                 }
                 this.health = 30;
                 this.maxHealth = 30;
+                this.ableToJump = false;
                 break;
 
             case "boss":
@@ -218,36 +224,20 @@ class Enemy extends Entity {
                     "walk_start": 1,
                     "walk_end": 5,
                     "walk_speed": 4,
-                    "jump": 0,
+                    "jump": 2,
                     "atk_sheet": "sprites/sprint3/boss_atk_70x70.png",
                     "atk_start": 0,
                     "atk_end": 8,
                     "sprite_size": [700, 700],
-                    "walk_pos_delta": 295,
+                    "walk_pos_delta": 265,
                     "atk_sprite_size": [700, 700],
-                    "atk_pos_delta": 295,
+                    "atk_pos_delta": 265,
                     "scale": 1/2
                 }
                 this.health = 100;
                 this.maxHealth = 100;
+                this.ableToJump = false;
                 break;
-
-            case "boss":
-                this.sprite_info = {
-                    "sheet": "sprites/sprint3/boss_70x70.png",
-                    "walk_start": 1,
-                    "walk_end": 5,
-                    "walk_speed": 4,
-                    "jump": 0,
-                    "atk_sheet": "sprites/sprint3/boss_atk_70x70.png",
-                    "atk_start": 0,
-                    "atk_end": 8,
-                    "sprite_size": [700,700],
-                    "walk_pos_delta": 295,
-                    "atk_sprite_size": [700,700],
-                    "atk_pos_delta": 295,
-                    "scale": 1/2
-                }
         }
         this.img0 = loadImage(this.sprite_info["sheet"]);
         this.img1 = loadImage(this.sprite_info["atk_sheet"]);
@@ -299,26 +289,26 @@ class Enemy extends Entity {
                         this.y - this.sprite_info["walk_pos_delta"], //y
                         this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
                         this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
-                        this.sprite_info["sprite_size"][0] * floor(this.enemy_frame),
-                        0,
-                        this.sprite_info["sprite_size"][0],
-                        this.sprite_info["sprite_size"][0]
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["jump"], //correct frame
+                        0, //i dont know what this variable is
+                        this.sprite_info["sprite_size"][0], //i dont know
+                        this.sprite_info["sprite_size"][0] //i dont know but it works
                     )
                 } else {
                     push();
-                    translate(thisEnemyX + (320 * this.sprite_info["scale"]), 0);
+                    translate(thisEnemyX + (320 * this.sprite_info["scale"]), this.y); //flips it while maintaining pos
                     scale(-1, 1);
                     image(
-                        this.img0, //image
-                        0, //x
-                        0 - this.sprite_info["walk_pos_delta"], //y
-                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
-                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
-                        this.sprite_info["sprite_size"][0] * 1,
+                        this.img0,
+                        0,
+                        0 - this.sprite_info["walk_pos_delta"],
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"],
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"],
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["jump"],
                         0,
                         this.sprite_info["sprite_size"][0],
                         this.sprite_info["sprite_size"][0]
-                    )
+                    );
                     pop();
                 }
 
@@ -359,20 +349,36 @@ class Enemy extends Entity {
                 if (this.enemy_frame > this.sprite_info["atk_end"]) {
                     this.enemy_frame = this.sprite_info["atk_start"];
                 }
+                break;
 
-            // case "still":
-            //     image(
-            //         this.img0, //image
-            //         this.x, //x
-            //         this.y, //y
-            //         320 * this.scale, //img h
-            //         320 * this.scale, //img w
-            //         320 * floor(this.enemy_frame) * 0,
-            //         0,
-            //         320,
-            //         320
-            //     )
-            //     break;
+            case "jumping":
+                image(
+                        this.img0, //image
+                        thisEnemyX, //x
+                        this.y - this.sprite_info["walk_pos_delta"], //y
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["jump"], //correct frame
+                        0, //i dont know what this variable is
+                        this.sprite_info["sprite_size"][0], //i dont know
+                        this.sprite_info["sprite_size"][0] //i dont know but it works
+                    )
+                break;
+                
+            case "still":
+                image(
+                        this.img0, //image
+                        thisEnemyX, //x
+                        this.y - this.sprite_info["walk_pos_delta"], //y
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
+                        this.sprite_info["sprite_size"][0] * 0 , //correct frame
+                        0, //i dont know what this variable is
+                        this.sprite_info["sprite_size"][0], //i dont know
+                        this.sprite_info["sprite_size"][0] //i dont know but it works
+                    )
+                break;
+
         }
 
         this.drawHealthBar();
@@ -399,11 +405,11 @@ class Enemy extends Entity {
     }
 
     moveAndJumpAndGravity() {
-
         this.yVel += gravity;
 
-        if (this.y >= groundY + 30) {
-            this.y = groundY + 30;
+        //if on ground stay on ground 
+        if (this.y >= groundY) {
+            this.y = groundY;
             this.yVel = 0;
             this.onGround = true;
             this.state = "walking";
@@ -412,11 +418,13 @@ class Enemy extends Entity {
             this.state = "jumping";
         }
 
+        //move the sprite!
         this.y += this.yVel
         this.x += this.xVel
     }
 
     intelligence () {
+        //follow player!
         if ((playerX - 50) > this.x) {
             this.xVel = this.sprite_info["walk_speed"];
             this.direction = "R";
@@ -426,6 +434,12 @@ class Enemy extends Entity {
         } else {
             this.state = "attack";
             this.xVel = 0;
+        }
+
+        //check if should jump
+        //150 is arbitrary, i wanted to add in some sort of delay to the jumping or else it looked weird
+        if ((this.y > playerY + 150) && this.onGround && this.ableToJump) {
+            this.jump();
         }
     }
 
@@ -462,5 +476,13 @@ class Enemy extends Entity {
 
     die() {
         // placeholder for death SFX / particle effects
+        
+    }
+
+    jump() {
+        this.onGround = false;
+        this.state = "jumping";
+        this.yVel = -15;
+        this.y += this.yVel;
     }
 }
