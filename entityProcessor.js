@@ -121,14 +121,33 @@ class Enemy extends Entity {
         this.ableToJump;
 
         this.spawnedIn = false;
+
+        //im ngl this is the stupidest variable 
+        //i just dont like using AI cuz its bad
+        //for the environment
+        //so excuse this bad code
+        this.deathJump = -5;
     }
 
     //self explanatory
     isAlive() {
         if (this.health <= 0) {
-            this.die();
-            console.log("dead");
-            return false;
+            this.health = 0;
+            this.yVel = this.deathJump;
+            this.y += this.yVel;
+            this.state = "jumping";
+            this.deathJump += 0.1;
+            this.deathJump = constrain(this.deathJump, -5, 0.1)
+            //maps the change in y to the change in opacity
+            tint(255, map(this.deathJump, -5, 0, 255, 0, true));
+            this.drawHealthBar();
+            // if (this.y < 0 - this.sprite_info["sprite_size"][1]) {
+            //     return false;
+            // }
+            if (this.deathJump > 0) {
+                tint(255, 255);
+                return false;
+            }
         }
         return true;
     }
@@ -143,11 +162,11 @@ class Enemy extends Entity {
             this.moveAndJumpAndGravity();
             this.intelligence();
             this.processHealth();
+            tint(255,255);
         }
 
         if (playerX > worldWidth - drawSize - 500) {
             this.spawnedIn = true;
-            console.log(this.type);
         }
     }
 
@@ -405,9 +424,10 @@ class Enemy extends Entity {
     }
 
     moveAndJumpAndGravity() {
-        this.yVel += gravity;
 
         //if on ground stay on ground 
+        this.yVel += gravity;
+        
         if (this.y >= groundY) {
             this.y = groundY;
             this.yVel = 0;
@@ -416,11 +436,13 @@ class Enemy extends Entity {
         } else {
             this.onGround = false;
             this.state = "jumping";
-        }
+        } 
+        
+
 
         //move the sprite!
-        this.y += this.yVel
-        this.x += this.xVel
+        this.y += this.yVel;
+        this.x += this.xVel;
     }
 
     intelligence () {
@@ -472,11 +494,6 @@ class Enemy extends Entity {
                 if (p.type === "light") mageProjectiles.splice(i, 1);
             }
         }
-    }
-
-    die() {
-        // placeholder for death SFX / particle effects
-        
     }
 
     jump() {
