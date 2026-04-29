@@ -13,6 +13,14 @@ let level1DevButton;
 let testLevelButton;
 let bossLevelButton;
 
+let isPaused = false;
+let pauseSubScreen = "main"
+let pauseMenuButton;
+let pauseResumeButton;
+let pauseSettingsButton;
+let pauseQuitButton;
+let pauseSnapshot = null;
+
 let masterVolumeSlider;
 let musicVolumeSlider;
 let sfxVolumeSlider;
@@ -330,6 +338,12 @@ function setup() {
   backButton.position(26, 22);
   styleSecondaryButton(backButton);
   backButton.mousePressed(function() {
+    if (isPaused && pauseSubScreen === "settings") {
+      pauseSubScreen = "main";
+      mouseReleased = false;
+      updateUI();
+      return;
+    }
     if (gameState === "settings" || gameState === "quit" || gameState === "poem") {
       mouseReleased = false;
       gameState = "menu";
@@ -349,6 +363,52 @@ function setup() {
     }
     updateUI();
   });
+
+pauseMenuButton = createButton("☰");
+pauseMenuButton.size(44, 44);
+pauseMenuButton.position(26, 22);
+styleSecondaryButton(pauseMenuButton);
+pauseMenuButton.style("font-size", "22px");
+pauseMenuButton.mousePressed(function() {
+  if (gameState === "introLevel") {
+    isPaused = true;
+    pauseSubScreen = "main";
+    mouseReleased = false;
+    updateUI();
+  }
+});
+
+pauseResumeButton = createMainMenuButton("Resume", 0, 0, function() {
+  isPaused = false;
+  pauseSnapshot = null;
+  mouseReleased = false;
+  updateUI();
+  mouseReleased = false;
+  updateUI();
+});
+
+pauseSettingsButton = createMainMenuButton("Settings", 0, 0, function() {
+  pauseSubScreen = "settings";
+  mouseReleased = false;
+  updateUI();
+});
+
+pauseQuitButton = createMainMenuButton("Quit", 0, 0, function() {
+  isPaused = false;
+  pauseSnapshot = null;
+  pauseSubScreen = "main";
+  gameState = "menu";
+  sfxAmbience.stop();
+  if (sfxWalking && sfxWalking.isPlaying()) sfxWalking.stop();
+  if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
+  musicDream.stop();
+  musicIntro.loop();
+  mouseReleased = false;
+  updateUI();
+});
+
+layoutPauseButtons();
+
 
   // Open Level 1 in the same tab so gameplay stays in one site flow.
   level1DevButton = createButton("Level 1 (dev)");
@@ -495,7 +555,6 @@ function draw() {
     }
     
   }
-  frameCalls();
 
   outputVolume(masterVolumeSlider.value() / 100);
 
@@ -516,6 +575,22 @@ function windowResized() {
 
 function keyPressed() {
   if (gameState !== "introLevel") return;
+
+  if (keyCode === ESCAPE) {
+    if(!isPaused) {
+      isPaused = true;
+      pauseSubScreen = "main"
+    } else if (pauseSubScreen === "settings") {
+      pauseSubScreen = "main"
+    } else {
+      isPaused = false;
+      pauseSnapshot = null;
+    }
+    updateUI();
+    return false;
+  }
+
+  if (isPaused) return;
 
   if ((key === 'w' || key === 'W') && onGround) {
     velY = jumpForce;
@@ -954,8 +1029,11 @@ function layoutMenuButtons() {
 function layoutVolumeSliders() {
   let sliderW = 220;
   let sliderX = width / 2 - sliderW / 2;
-  let startY  = height * 0.42;
-  let gap     = height * 0.075;
+
+  let panelY = height * 0.04;
+  let panelH = 470;
+  let startY = panelY + panelH * 0.55;
+  let gap = panelH * 0.11;
 
   masterVolumeSlider.size(sliderW);
   musicVolumeSlider.size(sliderW);
@@ -967,7 +1045,9 @@ function layoutVolumeSliders() {
 }
 
 function volumeSliderY(index) {
-  return height * 0.42 + index * height * 0.075;
+  let panelY = height * 0.04;
+  let panelH = 470
+  return panelY + panelH * 0.55 + index * panelH * 0.11;
 }
 
 function layoutClassButtons() {
@@ -1061,6 +1141,10 @@ function updateUI() {
   settingsButton.hide();
   quitButton.hide();
   backButton.hide();
+  pauseMenuButton.hide();
+  pauseResumeButton.hide();
+  pauseSettingsButton.hide();
+  pauseQuitButton.hide();
   level1DevButton.hide();
   testLevelButton.hide();
   bossLevelButton.hide();
@@ -1083,13 +1167,26 @@ function updateUI() {
     mageButton.show();
     meleeButton.show();
   } else if (gameState === "introLevel") {
-    backButton.show();
-    level1DevButton.show();
-    level1DevButton.position(width - 184, 98);
-    testLevelButton.show();
-    testLevelButton.position(width - 184, 144);
-    bossLevelButton.show();
-    bossLevelButton.position(width - 184, 190);
+    if (isPaused) {
+      if (pauseSubScreen === "main") {
+        pauseResumeButton.show();
+        pauseSettingsButton.show();
+        pauseQuitButton.show();
+      } else if (pauseSubScreen === "settings") {
+        backButton.show();
+        masterVolumeSlider.show();
+        musicVolumeSlider.show();
+        sfxVolumeSlider.show();
+      }
+    } else {
+      pauseMenuButton.show();
+      level1DevButton.show();
+      level1DevButton.position(width - 184, 98);
+      testLevelButton.show();
+      testLevelButton.position(width - 184, 144);
+      bossLevelButton.show();
+      bossLevelButton.position(width - 184, 190);
+      }
   } else if (gameState === "settings") {
     backButton.show();
     masterVolumeSlider.show();
@@ -1161,12 +1258,12 @@ function drawSettingsScreen() {
   textFont("Georgia");
   textStyle(BOLD);
   textSize(34);
-  text("Settings", width / 2, 170);
+  text("Settings", width / 2, height * 0.04 + 470 * 0.20);
 
   textStyle(NORMAL);
   textSize(22);
   fill(214, 214, 226);
-  text("Volume", width / 2, height * 0.33);
+  text("Volume", width / 2, height * 0.04 + 470 * 0.40);
 
   textSize(16);
   textAlign(CENTER, BOTTOM);
@@ -1180,9 +1277,47 @@ function drawSettingsScreen() {
   text("Main: "  + masterVolumeSlider.value() +
       "   Music: " + musicVolumeSlider.value() +
       "   SFX: "   + sfxVolumeSlider.value(),
-      width / 2, volumeSliderY(2) + height * 0.07);
+      width / 2, volumeSliderY(2) + 470 * 0.11);
 }
 
+function drawPauseScreen() {
+  // dim
+  fill(0, 0, 0, 140);
+  rect(0, 0, width, height);
+
+  if (pauseSubScreen === "main") {
+    drawSubScreenPanel();
+
+    fill(244, 244, 248);
+    textAlign(CENTER, CENTER);
+    textFont("Georgia");
+    textStyle(BOLD);
+    textSize(34);
+    text("Paused", width / 2, height * 0.04 + 470 * 0.20);
+    textStyle(NORMAL);
+  } else if (pauseSubScreen === "settings") {
+    drawSettingsScreen();
+  }
+}
+
+function layoutPauseButtons() {
+  let buttonW = 220;
+  let buttonH = 50;
+  let buttonX = width / 2 - buttonW / 2;
+
+  let panelY = height * 0.04;
+  let panelH = 470;
+  let startY = panelY + panelH * 0.40;
+  let gap    = panelH * 0.15;
+
+  pauseResumeButton.size(buttonW, buttonH);
+  pauseSettingsButton.size(buttonW, buttonH);
+  pauseQuitButton.size(buttonW, buttonH);
+
+  pauseResumeButton.position(buttonX, startY);
+  pauseSettingsButton.position(buttonX, startY + gap);
+  pauseQuitButton.position(buttonX, startY + gap * 2);
+}
 
 function drawQuitScreen() {
   let p = drawSubScreenPanel();
@@ -1206,8 +1341,26 @@ function drawIntroLevelScreen() {
     mouseReleased = true;
   }
 
-  if (!(isDialogue)) {
-    // Once intro dialogue finishes, immediately activate intro enemies.
+  if (isPaused) {
+    if (pauseSnapshot) {
+      // Subsequent paused frames: just blit the frozen image
+      image(pauseSnapshot, 0, 0);
+    } else {
+      // First paused frame: draw world fresh, including enemies, then snapshot
+      drawIntroWorld();
+      drawPlayer();
+      drawMageProjectiles();
+      drawIntroTopUI();
+      drawHUD();
+      if (isDialogue) drawIntroDialogueBox();
+      frameCalls();
+      pauseSnapshot = get();
+    }
+    drawPauseScreen();
+    return;
+  }
+
+  if (!isDialogue) {
     if (this_guy && this_guy2 && this_guy3 && !this_guy.spawnedIn && !this_guy2.spawnedIn && !this_guy3.spawnedIn) {
       this_guy.spawnedIn = true;
       this_guy2.spawnedIn = true;
@@ -1218,15 +1371,14 @@ function drawIntroLevelScreen() {
     updateMageProjectiles();
     updateMeleeAttacks();
   }
-  
+
   drawIntroWorld();
   drawPlayer();
   drawMageProjectiles();
   drawIntroTopUI();
   drawHUD();
-  if (isDialogue) {
-    drawIntroDialogueBox();
-  }
+  if (isDialogue) drawIntroDialogueBox();
+  frameCalls();
 }
 
 function windowResized() {
@@ -1244,6 +1396,7 @@ function windowResized() {
   bossLevelButton.position(width - 184, 190);
   layoutVolumeSliders();
   musicButton.position((width / 2) - 150, (height / 2) - 50);
+  layoutPauseButtons();
 }
 
 function updatePlayer() {
@@ -1581,6 +1734,7 @@ function drawChargeEffect() {
 
 function mousePressed() {
   if (gameState !== "introLevel") return;
+  if (isPaused) return;
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;
   // ignore clicks where the Level 1 (dev) button sits (below objective panel)
