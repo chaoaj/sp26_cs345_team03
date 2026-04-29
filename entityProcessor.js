@@ -11,7 +11,11 @@ function frameCalls() {
 
   for (i = 0; i < entityCount; i++) {
     if (entities[i].isAlive()) {
-        entities[i].frameChange();
+        if (!(isDialogue)) {
+            entities[i].frameChange();
+        } else if (entities[i].constructor === Dialogue) {
+            entities[i].frameChange();
+        }
     } else {
         if (entityCount == 1) {
             entities = [];
