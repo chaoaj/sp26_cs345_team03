@@ -8,7 +8,7 @@ let leftRight;
 
 // indicates whether or not there should be a image loaded for speaker
 // false means there should be an image loaded
-let playerIsTalker = false;
+let showDiaSprite = false;
 
 function initDiaFile(person) {
     if (person === "fairy") {
@@ -34,22 +34,27 @@ function printDialogue(line, lineNumber) {
 
         // #N indicates that the narrator is talking
         if (splitLine[0] === "#N") {
-            playerIsTalker = true;
+            showDiaSprite = true;
             dialogue = new Dialogue(splitLine[1], "", false);
         } else {
             personTalking = splitLine[0].substring(1);
             if (personTalking === "Fairy") {
-                playerIsTalker = false;
+                showDiaSprite = false;
                 dialogueSprite = fairySprite;
             } else if (personTalking === "Player") {
-                playerIsTalker = true;
+                showDiaSprite = false;
+                dialogueSprite = playerTalkSprite;
             } else if (personTalking === "Trader") {
-                playerIsTalker = false;
+                showDiaSprite = false;
                 dialogueSprite = traderSprite;
             } else {
-                playerIsTalker = false;
+                showDiaSprite = false;
             }
-            dialogue = personDialogue(personTalking + ": ", splitLine[1]);
+            if (personTalking === "Player") {
+                dialogue = new Dialogue(splitLine[1], "", false);
+            } else {
+                dialogue = personDialogue(personTalking + ": ", splitLine[1]);
+            }
         }
     }
 

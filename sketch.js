@@ -5,6 +5,9 @@ let this_guy3;
 let gameState = "music";
 let selectedClass = "";
 
+let fadingFromBlack = false;
+let blackFadeCount = 500;
+
 let startButton;
 let settingsButton;
 let quitButton;
@@ -57,10 +60,13 @@ let poemLines;
 let frames = 0;
 let fireflies = [];
 let fairySprite;
+let playerTalkSprite;
 let dialogueSprite;
 let npcSprites;
 let traderSprite;
 let skipDialogueButton;
+let mageSprite;
+let meleeSprite;
 
 // pre-rendered static background buffers
 let menuBgBuffer;
@@ -241,6 +247,8 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
 
   traderSprite = npcSprites.get(40, 0, 240, 240);
+  mageSprite = mageSprite.get(40, 0, 240, 240);
+  meleeSprite = meleeSprite.get(40, 0, 240, 240);
 
   for (let i = 0; i < 80; i++) {
     stars.push({
@@ -312,6 +320,7 @@ function setup() {
   mageButton = createMainMenuButton("Mage", 0, 0, function() {
     selectedClass = "Mage";
     initIntroLevel();
+    fadingFromBlack = true;
     gameState = "introLevel";
     musicIntro.stop();
     musicDream.stop();
@@ -324,6 +333,7 @@ function setup() {
   meleeButton = createMainMenuButton("Melee", 0, 0, function() {
     selectedClass = "Melee";
     initIntroLevel();
+    fadingFromBlack = true;
     gameState = "introLevel";
     musicIntro.stop();
     musicDream.stop();
@@ -472,6 +482,7 @@ layoutPauseButtons();
     }
     if (startState === "introLevel" && (selectedClass === "Mage" || selectedClass === "Melee")) {
       initIntroLevel(true);
+      fadingFromBlack = true;
       gameState = "introLevel";
       musicButton.hide();
       musicIntro.stop();
@@ -493,6 +504,8 @@ function preload() {
   fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
   traderDia = loadStrings("./libraries/data/dialogue/trader.txt");
   npcSprites = loadImage("sprites/sprint2/npcs_320x320.png");
+  mageSprite = loadImage("sprites/sprint2/mage_class_320x320.png");
+  meleeSprite = loadImage("sprites/sprint2/melee_class_320x320.png");
   
   sfxLightMelee = loadSound("sounds/light swing.mp3");
   sfxHeavyMelee = loadSound("sounds/heavy swing.mp3");
@@ -529,6 +542,7 @@ function draw() {
   frames++;
   if (frames > 9) frames = 0;
 
+  
   if (gameState !== "introLevel") drawFantasyBackground();
 
   if (gameState === "menu") {
@@ -540,6 +554,19 @@ function draw() {
     drawClassSelectScreen();
   } else if (gameState === "introLevel") {
     drawIntroLevelScreen();
+    if (fadingFromBlack) {
+      fill(0, 0, 0, blackFadeCount)
+      rect(0, 0, width, height)
+      blackFadeCount -= 5;
+      if (blackFadeCount <= 0) {
+        fadingFromBlack = false;
+        skipDialogueButton.show();
+        level1DevButton.show();
+        testLevelButton.show();
+        bossLevelButton.show();
+        pauseMenuButton.show();
+      }
+    }
   } else if (gameState === "settings") {
     drawSettingsScreen();
   } else if (gameState === "quit") {
@@ -683,8 +710,12 @@ function initIntroLevel(skipDialogue = false) {
     ? "sprites/sprint2/mage_class_320x320.png"
     : "sprites/sprint2/melee_class_320x320.png";
   spriteSheet = loadImage(spritePath);
+  if (selectedClass === "Mage") {
+    playerTalkSprite = mageSprite;
+  }
 
   if (selectedClass === "Melee") {
+    playerTalkSprite = meleeSprite;
     atkLightSheet = loadImage("sprites/sprint2/melee_attack_320x160.png");
     atkHeavySheet = loadImage("sprites/sprint2/heavy_melee_atk_320x320.png");
   } else {
@@ -1337,6 +1368,7 @@ function drawQuitScreen() {
 }
 
 function drawIntroLevelScreen() {
+  
   if (!mouseIsPressed) {
     mouseReleased = true;
   }
@@ -1359,6 +1391,7 @@ function drawIntroLevelScreen() {
     drawPauseScreen();
     return;
   }
+  
 
   if (!isDialogue) {
     if (this_guy && this_guy2 && this_guy3 && !this_guy.spawnedIn && !this_guy2.spawnedIn && !this_guy3.spawnedIn) {
@@ -1374,6 +1407,14 @@ function drawIntroLevelScreen() {
 
   drawIntroWorld();
   drawPlayer();
+  if (fadingFromBlack) {
+    skipDialogueButton.hide();
+    level1DevButton.hide();
+    testLevelButton.hide();
+    bossLevelButton.hide();
+    pauseMenuButton.hide();
+    return;
+  }
   drawMageProjectiles();
   drawIntroTopUI();
   drawHUD();
@@ -2035,7 +2076,7 @@ function drawIntroDialogueBox() {
     textSize(14);
     text(introPrompt, boxX + boxW - 18, boxY + boxH - 14);
   }
-   if (!(playerIsTalker)) {
+   if (!(showDiaSprite)) {
     fill(0, 0, 0)
     rect(boxX + ((boxW * 47) / 56) - 10, boxY + (boxH / 5) - 10, 70, 70)
     fill(50, 50, 50)
