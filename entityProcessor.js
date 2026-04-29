@@ -75,7 +75,7 @@ class Dialogue extends Entity {
             entityWaitingForMouse = -1;
             if (this.lastLine) {
                 isDialogue = false;
-            } else {
+            } else if (isDialogue) {
                 nextDialogueReady = true;
                 printDialogue(currDiaFile[nextDiaLine], nextDiaLine)
             }

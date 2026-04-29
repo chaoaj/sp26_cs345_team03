@@ -665,7 +665,7 @@ function initIntroLevel(skipDialogue = false) {
     
 
     dialogueSprite = fairySprite
-    initDiaFile();
+    initDiaFile("fairy");
     skipDialogueButton.show();
     isDialogue = true;
   }
