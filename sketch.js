@@ -250,6 +250,7 @@ function setup() {
   traderSprite = npcSprites.get(40, 0, 240, 240);
   mageSprite = mageSprite.get(40, 0, 240, 240);
   meleeSprite = meleeSprite.get(40, 0, 240, 240);
+  forestSprite = forestSprite.get(10, 7, 2489, 570);
 
   for (let i = 0; i < 80; i++) {
     stars.push({
@@ -390,7 +391,7 @@ pauseMenuButton.position(26, 22);
 styleSecondaryButton(pauseMenuButton);
 pauseMenuButton.style("font-size", "22px");
 pauseMenuButton.mousePressed(function() {
-  if (gameState === "introLevel") {
+  if (gameState === "introLevel" || gameState === "introForest") {
     isPaused = true;
     pauseSubScreen = "main";
     mouseReleased = false;
@@ -507,15 +508,16 @@ layoutPauseButtons();
 }
 
 function preload() {
-  this_guy = new Enemy("sml");
-  this_guy2 = new Enemy("med");
-  this_guy3 = new Enemy("boss");
+  //this_guy = new Enemy("sml");
+  //this_guy2 = new Enemy("med");
+  //this_guy3 = new Enemy("boss");
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
   fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
   traderDia = loadStrings("./libraries/data/dialogue/trader.txt");
   npcSprites = loadImage("sprites/sprint2/npcs_320x320.png");
   mageSprite = loadImage("sprites/sprint2/mage_class_320x320.png");
   meleeSprite = loadImage("sprites/sprint2/melee_class_320x320.png");
+  forestSprite = loadImage("sprites/sprint5/forest.png")
   
   sfxLightMelee = loadSound("sounds/light swing.mp3");
   sfxHeavyMelee = loadSound("sounds/heavy swing.mp3");
@@ -553,7 +555,7 @@ function draw() {
   if (frames > 9) frames = 0;
 
   
-  if (gameState !== "introLevel") drawFantasyBackground();
+  if (gameState !== "introLevel" && gameState !== "introForest") drawFantasyBackground();
 
   if (gameState === "menu") {
     drawMenuPanel();
@@ -563,6 +565,7 @@ function draw() {
   } else if (gameState === "classSelect") {
     drawClassSelectScreen();
   } else if (gameState === "introLevel") {
+    //drawIntroLevelScreen();
     drawIntroLevelScreen();
     if (fadingFromBlack) {
       fill(0, 0, 0, blackFadeCount)
@@ -578,6 +581,17 @@ function draw() {
         blackFadeCount = 500;
       }
     }
+    if (playerX > 2000) {
+      playerX = 20
+      cameraX = 0;
+      gameState = "introForest"
+      worldWidth = 4960
+      updateUI();
+    }
+  } else if (gameState === "introForest") {
+
+    drawIntroForestScreen();
+
   } else if (gameState === "settings") {
     drawSettingsScreen();
   } else if (gameState === "quit") {
@@ -614,7 +628,7 @@ function windowResized() {
 }
 
 function keyPressed() {
-  if (gameState !== "introLevel") return;
+  if (gameState !== "introLevel" && gameState !== "introForest") return;
 
   if (keyCode === ESCAPE) {
     if(!isPaused) {
@@ -667,7 +681,7 @@ function initMusic() {
 }
 
 function keyReleased() {
-  if (gameState !== "introLevel") return;
+  if (gameState !== "introLevel" && gameState !== "introForest") return;
   if ((key === 'q' || key === 'Q') && isCharging && selectedClass === "Mage") {
     fireHeavyMageProjectile();
     isCharging = false;
@@ -689,9 +703,9 @@ function initIntroLevel(skipDialogue = false) {
   sfxAmbience.setVolume(0.4);
   sfxAmbience.loop();
 
-  introDialogue = "Placeholder intro text.";
+  //introDialogue = "Placeholder intro text.";
   introPrompt = "Click to continue";
-  introObjective = "Begin";
+  //introObjective = "Begin";
 
   if (skipDialogue) {
     introDialogue = "Placeholder next area.";
@@ -753,9 +767,9 @@ function initIntroLevel(skipDialogue = false) {
   if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
 
   // Recreate intro enemies whenever intro level is entered.
-  this_guy = new Enemy("sml");
-  this_guy2 = new Enemy("med");
-  this_guy3 = new Enemy("boss");
+  //this_guy = new Enemy("sml");
+  //this_guy2 = new Enemy("med");
+  //this_guy3 = new Enemy("boss");
 
   // Returning from Level 1 should be immediately playable with enemies present.
   if (skipDialogue) {
@@ -1270,7 +1284,7 @@ function updateUI() {
     backButton.show();
     mageButton.show();
     meleeButton.show();
-  } else if (gameState === "introLevel") {
+  } else if (gameState === "introLevel" || gameState === "introForest") {
     if (isPaused) {
       if (pauseSubScreen === "main") {
         pauseResumeButton.show();
@@ -1461,7 +1475,7 @@ function pauseCheck() {
 
 }
 
-function drawIntroLevelScreen() {
+function drawLevelUpdates() {
   if (!mouseIsPressed) {
     mouseReleased = true;
   }
@@ -1479,14 +1493,21 @@ function drawIntroLevelScreen() {
       this_guy2.spawnedIn = true;
       this_guy3.spawnedIn = true;
     }
-    updateIntroLevel();
     updatePlayer();
     updateMageProjectiles();
     updateMeleeAttacks();
   }
+}
 
+function drawIntroLevelScreen() {
+  
+  drawLevelUpdates();
   drawIntroWorld();
   drawPlayer();
+  
+  drawMageProjectiles();
+  drawIntroTopUI();
+  drawHUD();
   if (fadingFromBlack) {
     skipDialogueButton.hide();
     level1DevButton.hide();
@@ -1495,6 +1516,17 @@ function drawIntroLevelScreen() {
     pauseMenuButton.hide();
     return;
   }
+  if (isDialogue) drawIntroDialogueBox();
+  
+  frameCalls();
+  
+}
+
+function drawIntroForestScreen() {
+  drawLevelUpdates();
+  
+  drawIntroForest();
+  drawPlayer();
   drawMageProjectiles();
   drawIntroTopUI();
   drawHUD();
@@ -1633,6 +1665,7 @@ function drawPlayer() {
   } else {
     drawAttack();
   }
+  text(playerX, screenX, playerY + 20);
 }
 
 function drawAttack() {
@@ -1854,7 +1887,7 @@ function drawChargeEffect() {
 }
 
 function mousePressed() {
-  if (gameState !== "introLevel") return;
+  if (gameState !== "introLevel" && gameState !== "introForest") return;
   if (isPaused) return;
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;
@@ -1912,6 +1945,29 @@ function drawIntroWorld() {
   drawIntroPondArea();
   drawIntroForestArea();
   drawIntroVillagePathArea();
+  drawAmbientFireflies();
+  drawIntroStaticGrass();
+  pop();
+}
+
+function drawIntroForest() {
+  drawIntroSky();
+  drawIntroParallaxBack();
+
+  push();
+  translate(-cameraX, 0);
+  drawIntroGround();
+  drawIntroPondArea();
+  drawIntroForestArea();
+  //drawIntroVillagePathArea();
+  //2489, 570 - forest dimensions
+  if (playerX < 3200) {
+    image(forestSprite, 0, 0)
+  }
+  
+  if (playerX > 1600) {
+    image(forestSprite, 2489, 0)
+  }
   drawAmbientFireflies();
   drawIntroStaticGrass();
   pop();
