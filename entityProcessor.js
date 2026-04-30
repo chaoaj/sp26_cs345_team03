@@ -141,14 +141,15 @@ class Enemy extends Entity {
             this.y += this.yVel;
             this.state = "jumping";
             this.deathJump += 0.1;
-            this.deathJump = constrain(this.deathJump, -5, 0.1)
+            this.deathJump = constrain(this.deathJump, -5, 3.1)
             //maps the change in y to the change in opacity
-            tint(255, map(this.deathJump, -5, 0, 255, 0, true));
+
+            tint(255, map(this.deathJump, -5, 3, 255, 0, true));
             this.drawHealthBar();
             // if (this.y < 0 - this.sprite_info["sprite_size"][1]) {
             //     return false;
             // }
-            if (this.deathJump > 0) {
+            if (this.deathJump > 3) {
                 tint(255, 255);
                 return false;
             }

@@ -1,6 +1,7 @@
 let this_guy;
 let this_guy2;
 let this_guy3;
+let retryScreenOpacity = 140;
 
 let gameState = "music";
 let selectedClass = "";
@@ -316,6 +317,15 @@ function setup() {
     updateUI();
   });
 
+  retryButton = createRetryButton("Retry", width * 0.4, height * 0.66, function () {
+    gameState = "menu";
+    mouseReleased = false;
+    retryScreenOpacity = 0;
+    HP = maxHP;
+    updateUI();
+  });
+  
+
 
   mageButton = createMainMenuButton("Mage", 0, 0, function() {
     selectedClass = "Mage";
@@ -565,12 +575,15 @@ function draw() {
         testLevelButton.show();
         bossLevelButton.show();
         pauseMenuButton.show();
+        blackFadeCount = 500;
       }
     }
   } else if (gameState === "settings") {
     drawSettingsScreen();
   } else if (gameState === "quit") {
     drawQuitScreen();
+  } else if (gameState === "deathScreen") {
+    drawRetryScreen();
   }
   if (entityWaitingForMouse == 0 && mouseIsPressed) {
     if (isDialogue) {
@@ -641,6 +654,10 @@ function keyPressed() {
     if (introStage < 4) {
       introStage++;
     }
+  }
+
+  if (key === 'p' || key === 'P') {
+    decrementHealth();
   }
 }
 
@@ -748,10 +765,27 @@ function initIntroLevel(skipDialogue = false) {
   }
 }
 
+function decrementHealth() {
+  //it hurts!!
+  console.log("ow");
+  HP -= random(5, 20);
+  if (HP <= 0) {
+    playerDie();
+  }
+}
+
+function playerDie() {
+  //should do death animation and then change gamestate
+  //updateUI();
+  gameState = "deathScreen";
+  updateUI();
+}
+
 function drawHUD() {
   let x = 22;
   let y = 76;
 
+  HP = constrain(HP, 0, maxHP);
   drawBar(x, y, 180, 14, HP, maxHP, color(0, 64, 0), "HP");
 
   if (selectedClass === "Mage") {
@@ -947,6 +981,34 @@ function drawForegroundVignette() {
   noStroke();
 }
 
+function drawRetryScreen() {
+  pauseSnapshot = null;
+  pauseCheck();
+
+  
+  fill(0, 0, 0, retryScreenOpacity);
+  
+  retryScreenOpacity += 2;
+  retryScreenOpacity = constrain(retryScreenOpacity, 0, 140);
+  rect(0, 0, width, height);
+
+  for (i = 0; i < entityCount; i++) {
+    if (entities[i].isAlive() && entities[i].constructor === Enemy) {
+        if (entities[i].spawnedIn) {
+            entities[i].health = 0;
+            entities[i].load_enemies();
+
+        }
+    }
+    entities[i].frameChange();
+  }
+  fill(245);
+  textSize(100);
+  text("YOU DIED", width / 2 - textSize() * 2.55, height * 0.33);
+  retryButton.position(width / 2 - (width * 0.1) / 2, height * 0.66);
+  retryButton.size(width * 0.1, height * 0.1);
+}
+
 function drawMenuPanel() {
   let x = menuPanel.x;
   let y = menuPanel.y;
@@ -1113,6 +1175,15 @@ function createMainMenuButton(label, x, y, action) {
   return button;
 }
 
+function createRetryButton(label, x, y, action) {
+  let button = createButton(label);
+  button.size(300, 100);
+  button.position(x, y);
+  styleMainButton(button);
+  button.mousePressed(action);
+  return button;
+}
+
 function styleMainButton(button) {
   button.style("background", "rgba(20, 21, 31, 0.92)");
   button.style("color", "#f2f2f7");
@@ -1124,7 +1195,7 @@ function styleMainButton(button) {
   button.style("box-shadow", "0 0 0 rgba(0,0,0,0)");
   button.style("cursor", "pointer");
   button.style("text-align", "center");
-  button.style("transition", "all 0.18s ease");
+  button.style("transition" , "all 0.18s ease");
 
   button.mouseOver(function() {
     button.style("background", "rgba(34, 36, 52, 0.98)");
@@ -1185,6 +1256,8 @@ function updateUI() {
   mageButton.hide();
   meleeButton.hide();
 
+  retryButton.hide();
+
   if (gameState === "music") {
     musicButton.show();
   } else if (gameState === "menu") {
@@ -1208,7 +1281,7 @@ function updateUI() {
         masterVolumeSlider.show();
         musicVolumeSlider.show();
         sfxVolumeSlider.show();
-      }
+      } 
     } else {
       pauseMenuButton.show();
       level1DevButton.show();
@@ -1225,6 +1298,9 @@ function updateUI() {
     sfxVolumeSlider.show();
   } else if (gameState === "quit") {
     backButton.show();
+  } else if (gameState === "deathScreen") {
+    retryButton.show();
+    console.log("should be deathscreen");
   }
 }
 
@@ -1367,14 +1443,8 @@ function drawQuitScreen() {
   text("Press Back to continue.", p.x + p.w / 2, p.y + p.h * 0.65);
 }
 
-function drawIntroLevelScreen() {
-  
-  if (!mouseIsPressed) {
-    mouseReleased = true;
-  }
-
-  if (isPaused) {
-    if (pauseSnapshot) {
+function pauseCheck() {
+  if (pauseSnapshot) {
       // Subsequent paused frames: just blit the frozen image
       image(pauseSnapshot, 0, 0);
     } else {
@@ -1388,6 +1458,16 @@ function drawIntroLevelScreen() {
       frameCalls();
       pauseSnapshot = get();
     }
+
+}
+
+function drawIntroLevelScreen() {
+  if (!mouseIsPressed) {
+    mouseReleased = true;
+  }
+
+  if (isPaused) {
+    pauseCheck();
     drawPauseScreen();
     return;
   }
