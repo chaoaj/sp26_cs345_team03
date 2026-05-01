@@ -1634,10 +1634,9 @@ function drawQuitScreen() {
 
 function pauseCheck() {
   if (pauseSnapshot) {
-      // Subsequent paused frames: just blit the frozen image
-      image(pauseSnapshot, 0, 0);
+      image(pauseSnapshot, 0, 0, GAME_W, GAME_H);
     } else {
-      // First paused frame: draw world fresh, including enemies, then snapshot
+      // first paused frame, draw world, including enemies, then snapshot
       drawIntroWorld();
       drawPlayer();
       drawMageProjectiles();
@@ -1645,7 +1644,8 @@ function pauseCheck() {
       drawHUD();
       if (isDialogue) drawIntroDialogueBox();
       frameCalls();
-      pauseSnapshot = get();
+      // capture the actual game region in screen pixels, not the whole window
+      pauseSnapshot = get(scaleOffsetX, scaleOffsetY, GAME_W * scaleFactor, GAME_H * scaleFactor);
     }
 
 }
@@ -1680,6 +1680,7 @@ function drawLevelUpdates() {
 function drawIntroLevelScreen() {
   
   drawLevelUpdates();
+  if (isPaused) return;
   drawIntroWorld();
   drawPlayer();
   
@@ -1702,7 +1703,7 @@ function drawIntroLevelScreen() {
 
 function drawIntroForestScreen() {
   drawLevelUpdates();
-
+  if (isPaused) return;
   drawIntroForest();
   drawPlayer();
   drawMageProjectiles();
@@ -1734,6 +1735,7 @@ function drawEnemyCounter() {
 
 function drawTownLevel() {
   drawLevelUpdates();
+  if (isPaused) return;
   drawVillageWorld();
   push();
   translate(-cameraX, 0);
