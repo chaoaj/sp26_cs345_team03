@@ -10,6 +10,9 @@ let town2Sprite;
 let town3Sprite;
 let town4Sprite;
 
+let musicEnemies;
+let helped = false;
+
 const GAME_W = 960;
 const GAME_H = 540;
 let scaleFactor = 1;
@@ -555,6 +558,7 @@ function preload() {
   sfxAmbience = loadSound("sounds/forest ambience.mp3");
   musicIntro = loadSound("sounds/music/introScreen.mp3");
   musicDream = loadSound("sounds/music/Dream3.wav");
+  musicEnemies = loadSound("sounds/music/fightingEnemies.mp3");
 
 
   sfxWalking  = loadSound("sounds/walking hard_surface2.mp3");
@@ -564,6 +568,7 @@ function preload() {
   musicTrack = [
   { sound: musicIntro, base: 0.4 },
   { sound: musicDream, base: 0.4 },
+  { sound: musicEnemies, base: 1.5 },
 ];
 
 sfxTrack = [
@@ -615,7 +620,7 @@ function draw() {
         blackFadeCount = 500;
       }
     }
-    if (playerX > 2000) {
+    if (playerX > worldWidth - 100) {
       playerX = 10;
       cameraX = 0;
       gameState = "introForest"
@@ -626,7 +631,7 @@ function draw() {
   } else if (gameState === "introForest") {
 
     drawIntroForestScreen();
-    if (playerX > 4960 - (GAME_W / 6)) {
+    if (playerX > 4960 - (width / 6)) {
       worldWidth = 4400
       playerX = 10
       cameraX = 0;
@@ -793,7 +798,6 @@ function initIntroLevel(skipDialogue = false) {
     dialogueSprite = fairySprite
     initDiaFile("fairy");
     skipDialogueButton.show();
-    isDialogue = true;
   }
   // init player
   groundY = (GAME_H * 3 / 4) - drawSize;
@@ -1760,7 +1764,7 @@ function drawPlayer() {
   } else {
     drawAttack();
   }
-  text(playerX, screenX, playerY + 20);
+  //text(playerX, screenX, playerY + 20);
 }
 
 function drawAttack() {
@@ -2043,7 +2047,7 @@ function drawIntroWorld() {
   drawIntroGround();
   drawIntroPondArea();
   drawIntroForestArea();
-  drawIntroVillagePathArea();
+  //drawIntroVillagePathArea();
   drawAmbientFireflies();
   drawIntroStaticGrass();
   pop();
