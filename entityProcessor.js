@@ -573,7 +573,7 @@ class Enemy extends Entity {
                 this.direction = "R";
                 let stopOrNot = floor(random(1000))
                 if (stopOrNot < 2) {
-                    this.timer = floor(random(300))
+                    this.timer = floor(random(250) - random(100))
                     this.case = "still"
                 } else if (stopOrNot < 10) {
                     this.timer = floor(random(100) - random(50))
@@ -588,7 +588,7 @@ class Enemy extends Entity {
                 this.direction = "L";
                 let stopOrNot = floor(random(1000))
                 if (stopOrNot < 2) {
-                    this.timer = floor(random(300))
+                    this.timer = floor(random(250) - random(100))
                     this.case = "still"
                 } else if (stopOrNot < 10) {
                     this.timer = floor(random(100) - random(50))
