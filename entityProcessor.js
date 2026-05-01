@@ -1,6 +1,7 @@
 let entities = [];
 let entityCount = 0;
 let enemiesAlive = 0;
+let timers = [];
 
 
 function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
@@ -19,6 +20,20 @@ function frameCalls() {
                 entities[i].frameChange();
             }
         } else {
+            if (entities[i].constructor === Timer) {
+                timerID = entities[i].getID();
+                ti = entities[i].getIndex();
+                /*while (ti < timers.length && timers[ti].getID !== timerID) {
+                    ti++
+                }*/
+
+                while (ti < timers.length - 1) {
+                    timers[ti] = timers[ti + 1]
+                    timers[ti].decrementIndex();
+                    ti++
+                }
+                timers.pop();
+            }
             if (entityCount == 1) {
                 entities = [];
                 entityCount = 0;
@@ -29,6 +44,15 @@ function frameCalls() {
         }
     }
 
+}
+
+function canFindTimer(id) {
+    for (i = 0; i < timers.length; i++) {
+        if (timers[i].getID() === id) {
+            return true;
+        }
+    }
+    return false;
 }
 
 //interface for entities updated by frameCalls()
@@ -59,6 +83,39 @@ class Entity {
 
 
 }
+
+class Timer extends Entity {
+
+    constructor(time, id) {
+        super();
+        this.time = time;
+        this.id = id;
+        this.index = timers.length
+        timers.push(this);
+    }
+
+    isAlive() {
+        return this.time > 0;
+    }
+
+    frameChange() {
+        this.time--;
+    }
+
+    getID() {
+        return this.id
+    }
+
+    getIndex() {
+        return this.index
+    }
+
+    decrementIndex() {
+        this.index--
+    }
+
+}
+
 class Dialogue extends Entity {
 
     constructor(fullText, startText = "", lastLine = true) {
@@ -535,41 +592,70 @@ class Enemy extends Entity {
 
 }
 
+function enemyHitboxCheck(hitX, hitY, hitW, hitH, damage) {
+    /*push();
+    fill(255, 255, 255)
+    textSize(30);
+    textAlign(CENTER, CENTER);
+    textFont("Georgia");
+    //text(playerX - cameraX + ": " + playerY, playerX - cameraX, playerY + 30)
+    text()
+    translate(playerX - cameraX, playerY);*/
+    //player pos
+    pPos = playerX - cameraX;
+    if (hitX < pPos + drawSize &&
+    hitX + hitW > pPos &&
+    hitY < playerY + drawSize &&
+    hitY + hitH > playerY) {
+        if (playerCanBeHurt) {
+            decrementHealthBy(damage);
+            playerCanBeHurt = false;
+            hurtFrame = tenFrames + frames
+        }
+    }
+    //pop();
+    
+}
+
 function enemyHitboxer(enemyX, enemyY, enemySize, enemyType, enemyFrame, direction) {
+    if (!(playerCanBeHurt)) return;
     //if (Math.abs(playerX - cameraX - enemyX) > 30) 
+    let damage
     if (enemyType === "sml") {
+        damage = 10
         if (floor(enemyFrame) === 2) {
             sizeCutX = enemyX
             if (direction == -1) {
                 sizeCutX += (enemySize / 6);
             }
             sizeCutY = (enemySize / 4)
-            fill(255, 0, 0)
-            rect(sizeCutX, enemyY, enemySize - (enemySize / 6), enemySize / 4)
+            fill(255, 0, 0, 100)
+            enemyHitboxCheck(sizeCutX, enemyY, enemySize - (enemySize / 6), enemySize / 4, damage)
             sizeCutX = 0
             if (direction == 1) {
                 sizeCutX = ((enemySize * 3) / 4)
             }
-            rect(enemyX + sizeCutX, enemyY, (enemySize - ((enemySize * 3) / 4)), enemySize)
+            enemyHitboxCheck(enemyX + sizeCutX, enemyY, (enemySize - ((enemySize * 3) / 4)), enemySize, damage)
         } else if (floor(enemyFrame) === 3) {
             sizeCutY = (enemySize / 4);
             sizeCutX = (3 * enemySize) / 4;
-            fill(255, 0, 0)
+            fill(255, 0, 0, 100)
             if (direction == 1) {
-                rect(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - sizeCutX, enemySize - sizeCutY)
+                enemyHitboxCheck(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - sizeCutX, enemySize - sizeCutY, damage)
             } else {
-                rect(enemyX, enemyY + sizeCutY, enemySize - sizeCutX, enemySize - sizeCutY)
+                enemyHitboxCheck(enemyX, enemyY + sizeCutY, enemySize - sizeCutX, enemySize - sizeCutY, damage)
             }
         }
     } else if (enemyType === "med") {
+        damage = 15
         if (floor(enemyFrame > 1 && enemyFrame < 9)) {
             sizeCutY = ((5 * enemySize) / 29);
             sizeCutX = (3 * enemySize) / 4;
-            fill(255, 0, 0)
+            fill(255, 0, 0, 100)
             if (direction == 1) {
-                rect(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - sizeCutX, ((2 * enemySize) / 3) - sizeCutY)
+                enemyHitboxCheck(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - sizeCutX, ((2 * enemySize) / 3) - sizeCutY, damage)
             } else {
-                rect(enemyX - (enemySize / 3), enemyY + sizeCutY, enemySize - sizeCutX, ((2 * enemySize) / 3) - sizeCutY)
+                enemyHitboxCheck(enemyX - (enemySize / 3), enemyY + sizeCutY, enemySize - sizeCutX, ((2 * enemySize) / 3) - sizeCutY, damage)
             }
         }
     }

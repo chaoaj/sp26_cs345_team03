@@ -10,6 +10,14 @@ let town2Sprite;
 let town3Sprite;
 let town4Sprite;
 
+let sprinting = false;
+let hurtFrameCounter = 0;
+let playerCanBeHurt = true;
+let sprintVel;
+let testText = ""
+let canSprint = true;
+let sprintSound;
+
 let musicEnemies;
 let helped = false;
 
@@ -69,7 +77,8 @@ const KEYMAP_ACTIONS = [
   { id: "moveLeft",    label: "Move Left"    },
   { id: "moveRight",   label: "Move Right"   },
   { id: "heavyAttack", label: "Heavy Attack" },
-  { id: "lightAttack", label: "Light Attack" }
+  { id: "lightAttack", label: "Light Attack" },
+  { id: "sprint", label: "Sprint"}
 ];
 
 let isDialogue = false;
@@ -94,6 +103,7 @@ let stars = [];
 let particles = [];
 let poemLines;
 let frames = 0;
+let tenFrames = 0;
 let fireflies = [];
 let fairySprite;
 let playerTalkSprite;
@@ -599,7 +609,7 @@ function preload() {
   musicDream = loadSound("sounds/music/Dream3.wav");
   musicEnemies = loadSound("sounds/music/fightingEnemies.mp3");
 
-
+  sprintSound = loadSound("sounds/sprintSound.wav");
   sfxWalking  = loadSound("sounds/walking hard_surface2.mp3");
   sfxBarFull  = loadSound("sounds/bar full.mp3");
   sfxTextLoop = loadSound("sounds/text loop.mp3");
@@ -619,6 +629,7 @@ sfxTrack = [
   { sound: sfxWalking,    base: 0.35 },
   { sound: sfxBarFull,    base: 0.5 },
   { sound: sfxTextLoop,   base: 0.2 },
+  { sound : sprintSound,  base: 0.4}
 ];
 }
 
@@ -631,6 +642,20 @@ function draw() {
   frames++;
   if (frames > 9) frames = 0;
   if (frames == 9 && frameWait > 0) frameWait--;
+  tenFrames++;
+  if (tenFrames > 99) tenFrames = 0;
+  if (!(playerCanBeHurt)) {
+    hurtFrameCounter++
+    if (hurtFrameCounter > 30) {
+      playerCanBeHurt = true;
+      hurtFrameCounter = 0
+    }
+  }
+  
+  if (sprinting && !(canFindTimer("sprint"))) {
+    
+    sprinting = false;
+  }
 
   
   if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") drawFantasyBackground();
@@ -659,7 +684,7 @@ function draw() {
         blackFadeCount = 500;
       }
     }
-    if (playerX > worldWidth / 5) {
+    if (playerX > worldWidth - 100) {
       playerX = 10;
       cameraX = 0;
       gameState = "introForest"
@@ -751,6 +776,15 @@ function draw() {
   fill(0, 0, 0)
   rect(-(width / 20), 0, (width / 20), height)
   rect((width - (width / 4)), 0, (width / 20), height)
+  fill(255, 255, 255)
+  textSize(30)
+  //text(canFindTimer("sprint"), playerX - cameraX, height / 2)
+  /*fill(255, 255, 255)
+  textSize(30)
+  if (timers.length > 0) {
+    text(timers.length + ": " + timers[0].getID(), playerX - cameraX, height / 2)
+  }*/
+  
 }
 
 function windowResized() {
@@ -801,7 +835,7 @@ function keyPressed() {
 
   // gameplay-only past this point
   if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
-
+  testText = keyCode + "";
   if (keyCode === ESCAPE) {
     if (!isPaused) {
       isPaused = true;
@@ -833,10 +867,38 @@ function keyPressed() {
   if (keyPressMatches("lightAttack", keyCode)) {
     triggerLightAttack();
     return;
-  } else if ((key === 'j' || key === 'J') && selectedClass === "Mage" && magic > 0) {
+  } /*else if ((key === 'j' || key === 'J') && selectedClass === "Mage" && magic > 10) {
     spawnLightMageProjectile();
     sfxLightMage.play();
-    magic = max(0, magic - 9);
+    magic = max(0, magic - 10);
+  }*/
+
+  if (keyPressMatches("sprint", keyCode) && canSprint) {
+    let energyMeasure
+    if (selectedClass === "Mage") {
+      energyMeasure = magic;
+    } else {
+      energyMeasure = stamina
+    }
+    if (!(canFindTimer("sprint")) && (energyMeasure > 10)) {
+      sprintTimer = new Timer(10, "sprint")
+      sprintCooldown = new Timer(20, "sprintCool")
+      sprintSound.play()
+      if (velY < 0) {
+        velY = 0;
+      }
+      magic -= 10
+      stamina -= 10
+      sprinting = true;
+      canSprint = false;
+      if (facingLeft) {
+        sprintVel = -15
+      } else {
+        sprintVel = 15
+      }
+    }
+    return;
+
   }
 
   if (key === ' ' || keyCode === ENTER) {
@@ -947,6 +1009,13 @@ function decrementHealth() {
   //it hurts!!
   console.log("ow");
   HP -= random(5, 20);
+  if (HP <= 0) {
+    playerDie();
+  }
+}
+
+function decrementHealthBy(amount) {
+  HP -= amount;
   if (HP <= 0) {
     playerDie();
   }
@@ -1773,33 +1842,41 @@ function drawTownLevel() {
 
 function updatePlayer() {
   let moving = false;
-  if (isBindingDown("moveRight")) { playerX += 5; moving = true; facingLeft = false; }
-  if (isBindingDown("moveLeft"))  { playerX -= 5; moving = true; facingLeft = true;  }
+  if (!(sprinting)) {
+    if (isBindingDown("moveRight")) { playerX += 5; moving = true; facingLeft = false; }
+    if (isBindingDown("moveLeft"))  { playerX -= 5; moving = true; facingLeft = true;  }
+  }
 
   // clamp to world bounds (no walking off-screen)
   playerX = constrain(playerX, 0, worldWidth - drawSize);
 
-  velY += gravity;
-  playerY += velY;
+  if (!(sprinting)) {
+    velY += gravity;
+    playerY += velY;
+  
 
-  if (playerY >= groundY) {
-    playerY = groundY;
-    velY = 0;
-    onGround = true;
-  } else {
-    onGround = false;
-  }
+    if (playerY >= groundY) {
+      playerY = groundY;
+      velY = 0;
+      onGround = true;
+      if (!(canSprint) && !(canFindTimer("sprintCool"))) canSprint = true;
+    } else {
+      onGround = false;
+    }
 
-  if (!onGround) {
-    currentFrame = 1;
-  } else if (moving) {
-    animTimer++;
-    if (animTimer % 8 === 0) moveFrameIndex = (moveFrameIndex + 1) % 3;
-    currentFrame = 2 + moveFrameIndex;
+    if (!onGround) {
+      currentFrame = 1;
+    } else if (moving) {
+      animTimer++;
+      if (animTimer % 8 === 0) moveFrameIndex = (moveFrameIndex + 1) % 3;
+      currentFrame = 2 + moveFrameIndex;
+    } else {
+      currentFrame = 0;
+      moveFrameIndex = 0;
+      animTimer = 0;
+    }
   } else {
-    currentFrame = 0;
-    moveFrameIndex = 0;
-    animTimer = 0;
+    playerX += sprintVel;
   }
 
   // camera follows player, clamped to world
@@ -1836,7 +1913,7 @@ function updatePlayer() {
   if (!isCharging) {
     if (selectedClass === "Mage") {
       let prev = magic;
-      magic = min(maxMagic, magic + 0.03);
+      magic = min(maxMagic, magic + 0.1);
       if (prev < maxMagic && magic >= maxMagic && sfxBarFull) sfxBarFull.play();
     } else {
       let prev = stamina;
@@ -1874,6 +1951,9 @@ function drawPlayer() {
   let sx = currentFrame * frameWidth;
 
   push();
+  if (!(playerCanBeHurt) && hurtFrameCounter < 10) {
+    tint(255, 100, 100)
+  }
   if (facingLeft) {
     translate(screenX + drawSize, playerY);
     scale(-1, 1);
@@ -2507,7 +2587,8 @@ function getDefaultKeybinds() {
     moveLeft:    { type: "key",   code: 65, label: "A" },
     moveRight:   { type: "key",   code: 68, label: "D" },
     heavyAttack: { type: "key",   code: 81, label: "Q" },
-    lightAttack: { type: "mouse", button: LEFT, label: "Left Click" }
+    lightAttack: { type: "mouse", button: LEFT, label: "Left Click" },
+    sprint:      { type: "key", code: 16, label: "Shift"}
   };
 }
 
@@ -2601,7 +2682,7 @@ function tryJump() {
 }
 
 function triggerLightAttack() {
-  if (stamina <= 0 || magic <= 0) return;
+  if (stamina <= 10 || magic <= 10) return;
   if (isCharging) return;
   if (isDialogue) return;
   if (attackType !== "") return;
@@ -2609,7 +2690,7 @@ function triggerLightAttack() {
   if (selectedClass === "Mage") {
     spawnLightMageProjectile();
     sfxLightMage.play();
-    magic = max(0, magic - 9);
+    magic = max(0, magic - 10);
   } else {
     spawnLightMeleeAttack();
   }
@@ -2620,6 +2701,7 @@ function triggerHeavyAttack() {
   if (magic <= 15 || stamina <= 15) return;
 
   if (selectedClass === "Mage") {
+    magic = max(0, magic - 10)
     isCharging = true;
     chargeTime = 0;
   } else {
