@@ -2,6 +2,8 @@ let entities = [];
 let entityCount = 0;
 let enemiesAlive = 0;
 let timers = [];
+let playerJustLanded = false;
+let waitingToLand = false;
 
 
 function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
@@ -15,6 +17,9 @@ function frameCalls() {
     for (i = 0; i < entityCount; i++) {
         if (entities[i].isAlive()) {
             if (!(isDialogue)) {
+                if (playerJustLanded && entities[i].constructor === Enemy && entities[i].isGrounded()) {
+                    entities[i].setAbleToJump();
+                }
                 entities[i].frameChange();
             } else if (entities[i].constructor === Dialogue) {
                 entities[i].frameChange();
@@ -43,12 +48,22 @@ function frameCalls() {
             }
         }
     }
+    playerJustLanded = false;
 
 }
 
 function canFindTimer(id) {
     for (i = 0; i < timers.length; i++) {
         if (timers[i].getID() === id) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function canFindTimerbyTimer(timer) {
+    for (i = 0; i < timers.length; i++) {
+        if (timers[i] === timer) {
             return true;
         }
     }
@@ -189,6 +204,8 @@ class Enemy extends Entity {
             this.x = cameraX + width + 10;
             this.direction = "L";
         }
+        //this.hasTimer = false
+        this.timer = 0
         enemiesAlive++;
         this.health = 100;
         this.setSprites(enemy_type);
@@ -213,6 +230,14 @@ class Enemy extends Entity {
         this.deathJump = -5;
     }
 
+    setAbleToJump() {
+        this.ableToJump = true;
+    }
+
+    isGrounded() {
+        return this.onGround
+    }
+
     //self explanatory
     isAlive() {
         if (this.health <= 0) {
@@ -224,6 +249,8 @@ class Enemy extends Entity {
             this.deathJump = constrain(this.deathJump, -5, 3.1);
             if (this.deathJump > 3) {
                 enemiesAlive--;
+                magic += 15
+                stamina += 15
                 if (enemiesAlive < 0) enemiesAlive = 0;
                 return false;
             }
@@ -350,6 +377,10 @@ class Enemy extends Entity {
         let thisEnemyX = this.x - cameraX;
         switch (this.state) {
             case "walking":
+                if (this.timer > 0) {
+                    this.state = "still"
+                    return;
+                }
                 if (this.direction == "R") {
                     image(
                         this.img0, //image
@@ -518,7 +549,9 @@ class Enemy extends Entity {
             this.y = groundY;
             this.yVel = 0;
             this.onGround = true;
-            this.state = "walking";
+            if (this.timer <= 0) {
+                this.state = "walking";
+            }
         } else {
             this.onGround = false;
             this.state = "jumping";
@@ -528,17 +561,42 @@ class Enemy extends Entity {
 
         //move the sprite!
         this.y += this.yVel;
-        this.x += this.xVel;
+        if (this.timer <= 0) this.x += this.xVel;
+        
     }
 
     intelligence() {
         //follow player!
         if ((playerX - 50) > this.x) {
-            this.xVel = this.sprite_info["walk_speed"];
-            this.direction = "R";
+            if (this.timer <= 0) {
+                this.xVel = this.sprite_info["walk_speed"];
+                this.direction = "R";
+                let stopOrNot = floor(random(1000))
+                if (stopOrNot < 2) {
+                    this.timer = floor(random(300))
+                    this.case = "still"
+                } else if (stopOrNot < 10) {
+                    this.timer = floor(random(100) - random(50))
+                    this.case = "still"
+                }
+            } else {
+                this.timer--;
+            }
         } else if ((playerX + 50) < this.x) {
-            this.xVel = this.sprite_info["walk_speed"] * -1;
-            this.direction = "L";
+            if (this.timer <= 0) {
+                this.xVel = this.sprite_info["walk_speed"] * -1;
+                this.direction = "L";
+                let stopOrNot = floor(random(1000))
+                if (stopOrNot < 2) {
+                    this.timer = floor(random(300))
+                    this.case = "still"
+                } else if (stopOrNot < 10) {
+                    this.timer = floor(random(100) - random(50))
+                    this.case = "still"
+                }
+            } else {
+                this.timer--;
+            }
         } else {
             this.state = "attack";
             this.xVel = 0;
@@ -547,7 +605,12 @@ class Enemy extends Entity {
         //check if should jump
         //150 is arbitrary, i wanted to add in some sort of delay to the jumping or else it looked weird
         if ((this.y > playerY + 120 + floor(random(60))) && this.onGround && this.ableToJump) {
-            this.jump();
+            if (floor(random(10)) < 5) {
+                this.jump();
+            } else {
+                this.ableToJump = false;
+                waitingToLand = true;
+            }
         }
     }
 

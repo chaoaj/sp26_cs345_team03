@@ -17,6 +17,7 @@ let sprintVel;
 let testText = ""
 let canSprint = true;
 let sprintSound;
+let enemyWaves = 0;
 
 let musicEnemies;
 let helped = false;
@@ -705,8 +706,37 @@ function draw() {
       spawnEnemy("sml", "right");
       spawnEnemy("sml", "left");
       spawnEnemy("med", "middle");
+      enemyWaves = 1
     }
-    if (playerX > 4960 - (width / 6)) {
+    if (enemyWaves == 1 && enemiesAlive <= 0) {
+      spawnEnemy("med", "right-ish");
+      spawnEnemy("med", "right");
+      spawnEnemy("sml", "left-ish");
+      spawnEnemy("sml", "left");
+      spawnEnemy("sml", "middle");
+      spawnEnemy("med", "middle");
+      spawnEnemy("sml", "left");
+      spawnEnemy("sml", "right-ish");
+      enemyWaves++
+    }
+    if (enemyWaves == 2 && enemiesAlive <= 0) {
+      spawnEnemy("sml", "right-ish");
+      spawnEnemy("sml", "right");
+      spawnEnemy("sml", "left-ish");
+      spawnEnemy("sml", "left");
+      spawnEnemy("sml", "middle");
+      spawnEnemy("sml", "middle");
+      spawnEnemy("sml", "left");
+      spawnEnemy("sml", "right-ish");
+      spawnEnemy("sml", "right");
+      spawnEnemy("sml", "right-ish");
+      spawnEnemy("sml", "left");
+      spawnEnemy("sml", "middle");
+      spawnEnemy("sml", "right");
+
+      enemyWaves++
+    }
+    if (playerX > 4960 - (width / 6) && enemiesAlive <= 0) {
       worldWidth = 4400
       playerX = 10
       cameraX = 0;
@@ -779,11 +809,11 @@ function draw() {
   fill(255, 255, 255)
   textSize(30)
   //text(canFindTimer("sprint"), playerX - cameraX, height / 2)
-  /*fill(255, 255, 255)
+  fill(255, 255, 255)
   textSize(30)
-  if (timers.length > 0) {
-    text(timers.length + ": " + timers[0].getID(), playerX - cameraX, height / 2)
-  }*/
+  
+  //text(timers.length, playerX - cameraX, height / 2)
+  
   
 }
 
@@ -1858,6 +1888,10 @@ function updatePlayer() {
     if (playerY >= groundY) {
       playerY = groundY;
       velY = 0;
+      if (waitingToLand) {
+        waitingToLand = false
+        playerJustLanded = true;
+      }
       onGround = true;
       if (!(canSprint) && !(canFindTimer("sprintCool"))) canSprint = true;
     } else {
@@ -2587,7 +2621,8 @@ function getDefaultKeybinds() {
     moveLeft:    { type: "key",   code: 65, label: "A" },
     moveRight:   { type: "key",   code: 68, label: "D" },
     heavyAttack: { type: "key",   code: 81, label: "Q" },
-    lightAttack: { type: "mouse", button: LEFT, label: "Left Click" },
+    //lightAttack: { type: "mouse", button: LEFT, label: "Left Click" },
+    lightAttack: { type: "key", code: 74, label: "J" },
     sprint:      { type: "key", code: 16, label: "Shift"}
   };
 }
