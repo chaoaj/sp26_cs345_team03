@@ -2550,7 +2550,7 @@ function drawIntroDialogueBox() {
   textSize(15);
   if (isDialogue) {
     textAlign(LEFT, TOP);
-    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 60, 18);
+    printByWord(dialogue.getText(), boxX + 18, boxY + 40, 45, 18);
     if (!dialogue.finished && sfxTextLoop && !sfxTextLoop.isPlaying()) sfxTextLoop.loop();
     else if (dialogue.finished && sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
   }
