@@ -2,6 +2,7 @@ let entities = [];
 let entityCount = 0;
 let enemiesAlive = 0;
 
+
 function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
     return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 }
@@ -115,9 +116,21 @@ class Enemy extends Entity {
             this.x = cameraX + width + 60;
             this.direction = "L";
         }
-        else {
+        else if (side == "left") {
             this.x = cameraX - 60;
             this.direction = "R";
+        }
+        else if (side == "right-ish") {
+            this.x = cameraX + width + 30;
+            this.direction = "L";
+        }
+        else if(side == "middle") {
+            this.x = cameraX + width;
+            this.direction = "L";
+        }
+        else {
+            this.x = cameraX + width + 10;
+            this.direction = "L";
         }
         enemiesAlive++;
         this.health = 100;
@@ -151,17 +164,10 @@ class Enemy extends Entity {
             this.y += this.yVel;
             this.state = "jumping";
             this.deathJump += 0.1;
-            this.deathJump = constrain(this.deathJump, -5, 3.1)
-            //maps the change in y to the change in opacity
-
-            tint(255, map(this.deathJump, -5, 3, 255, 0, true));
-            this.drawHealthBar();
-            // if (this.y < 0 - this.sprite_info["sprite_size"][1]) {
-            //     return false;
-            // }
+            this.deathJump = constrain(this.deathJump, -5, 3.1);
             if (this.deathJump > 3) {
-                tint(255, 255);
                 enemiesAlive--;
+                if (enemiesAlive < 0) enemiesAlive = 0;
                 return false;
             }
         }
@@ -173,11 +179,16 @@ class Enemy extends Entity {
 
         this.enemy_frame += 0.13;
 
-        if (gameState === "introLevel" && this.spawnedIn && this.isAlive()) {
-            this.load_enemies();
-            this.moveAndJumpAndGravity();
-            this.intelligence();
-            this.processHealth();
+        if ((gameState === "introLevel" || gameState === "introForest") && this.spawnedIn) {
+            if (this.health > 0) {
+                this.load_enemies();
+                this.moveAndJumpAndGravity();
+                this.intelligence();
+                this.processHealth();
+            } else {
+                tint(255, map(this.deathJump, -5, 3, 255, 0, true));
+                this.load_enemies();
+            }
             tint(255, 255);
         }
 
@@ -207,8 +218,8 @@ class Enemy extends Entity {
                     "atk_pos_delta": -15, //fix atk pos
                     "scale": 1 / 6
                 }
-                this.health = 10;
-                this.maxHealth = 10;
+                this.health = 60;
+                this.maxHealth = 60;
                 this.ableToJump = true;
                 break;
             case "med":
@@ -227,8 +238,8 @@ class Enemy extends Entity {
                     "atk_pos_delta": -5,
                     "scale": 1 / 5
                 }
-                this.health = 20;
-                this.maxHealth = 20;
+                this.health = 100;
+                this.maxHealth = 100;
                 this.ableToJump = true;
 
                 break;
@@ -248,8 +259,8 @@ class Enemy extends Entity {
                     "atk_pos_delta": 150,
                     "scale": 1 / 3
                 }
-                this.health = 30;
-                this.maxHealth = 30;
+                this.health = 150;
+                this.maxHealth = 150;
                 this.ableToJump = false;
                 break;
 

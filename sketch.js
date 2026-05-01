@@ -10,6 +10,17 @@ let town2Sprite;
 let town3Sprite;
 let town4Sprite;
 
+const GAME_W = 960;
+const GAME_H = 540;
+let scaleFactor = 1;
+let scaleOffsetX = 0;
+let scaleOffsetY = 0;
+
+function toScreenX(gx) { return scaleOffsetX + gx * scaleFactor; }
+function toScreenY(gy) { return scaleOffsetY + gy * scaleFactor; }
+function gameMX() { return (mouseX - scaleOffsetX) / scaleFactor; }
+function gameMY() { return (mouseY - scaleOffsetY) / scaleFactor; }
+
 let fadingFromBlack = false;
 let blackFadeCount = 500;
 
@@ -80,10 +91,10 @@ let vignetteBuffer;
 
 // main menu panel
 let menuPanel = {
-  get x() { return width * 0.073 },
-  get y() { return height * 0.05 },
-  get w() { return width * 0.238 },
-  get h() { return height * 0.80 }
+  get x() { return GAME_W * 0.073 },
+  get y() { return GAME_H * 0.05 },
+  get w() { return GAME_W * 0.238 },
+  get h() { return GAME_H * 0.80 }
 };
 
 // intro level
@@ -140,25 +151,26 @@ let wasWalking = false;
 
 //enemy spawning
 let introEnemiesSpawned = false;
+let forestEnemiesSpawned = false;
 
 function buildMenuBgBuffer() {
   if (menuBgBuffer) menuBgBuffer.remove();
-  menuBgBuffer = createGraphics(width, height);
+  menuBgBuffer = createGraphics(GAME_W, GAME_H);
   let pg = menuBgBuffer;
 
-  for (let y = 0; y < height; y++) {
-    let t = map(y, 0, height, 0, 1);
+  for (let y = 0; y < GAME_H; y++) {
+    let t = map(y, 0, GAME_H, 0, 1);
     let top = color(13, 14, 28);
     let mid = color(28, 24, 48);
     let bot = color(70, 52, 92);
     let c = t < 0.55 ? lerpColor(top, mid, t / 0.55) : lerpColor(mid, bot, (t - 0.55) / 0.45);
     pg.stroke(c);
-    pg.line(0, y, width, y);
+    pg.line(0, y, GAME_W, y);
   }
   pg.noStroke();
 
-  let glowX = width * 0.63;
-  let glowY = height * 0.22;
+  let glowX = GAME_W * 0.63;
+  let glowY = GAME_H * 0.22;
   for (let i = 0; i < 10; i++) {
     pg.fill(205, 215, 255, 10 - i * 0.7);
     pg.ellipse(glowX, glowY, 320 - i * 24, 220 - i * 16);
@@ -168,42 +180,42 @@ function buildMenuBgBuffer() {
 
   pg.fill(25, 22, 42);
   pg.beginShape();
-  pg.vertex(0, height * 0.72);
-  pg.vertex(width * 0.06, height * 0.63);
-  pg.vertex(width * 0.14, height * 0.68);
-  pg.vertex(width * 0.22, height * 0.56);
-  pg.vertex(width * 0.30, height * 0.65);
-  pg.vertex(width * 0.39, height * 0.50);
-  pg.vertex(width * 0.49, height * 0.63);
-  pg.vertex(width * 0.58, height * 0.52);
-  pg.vertex(width * 0.68, height * 0.66);
-  pg.vertex(width * 0.78, height * 0.56);
-  pg.vertex(width * 0.88, height * 0.67);
-  pg.vertex(width, height * 0.58);
-  pg.vertex(width, height);
-  pg.vertex(0, height);
+  pg.vertex(0, GAME_H * 0.72);
+  pg.vertex(GAME_W * 0.06, GAME_H * 0.63);
+  pg.vertex(GAME_W * 0.14, GAME_H * 0.68);
+  pg.vertex(GAME_W * 0.22, GAME_H * 0.56);
+  pg.vertex(GAME_W * 0.30, GAME_H * 0.65);
+  pg.vertex(GAME_W * 0.39, GAME_H * 0.50);
+  pg.vertex(GAME_W * 0.49, GAME_H * 0.63);
+  pg.vertex(GAME_W * 0.58, GAME_H * 0.52);
+  pg.vertex(GAME_W * 0.68, GAME_H * 0.66);
+  pg.vertex(GAME_W * 0.78, GAME_H * 0.56);
+  pg.vertex(GAME_W * 0.88, GAME_H * 0.67);
+  pg.vertex(GAME_W, GAME_H * 0.58);
+  pg.vertex(GAME_W, GAME_H);
+  pg.vertex(0, GAME_H);
   pg.endShape(CLOSE);
 
   pg.fill(17, 15, 28);
   pg.beginShape();
-  pg.vertex(0, height * 0.82);
-  pg.vertex(width * 0.08, height * 0.73);
-  pg.vertex(width * 0.16, height * 0.79);
-  pg.vertex(width * 0.24, height * 0.67);
-  pg.vertex(width * 0.33, height * 0.78);
-  pg.vertex(width * 0.42, height * 0.69);
-  pg.vertex(width * 0.52, height * 0.83);
-  pg.vertex(width * 0.61, height * 0.70);
-  pg.vertex(width * 0.71, height * 0.81);
-  pg.vertex(width * 0.81, height * 0.69);
-  pg.vertex(width * 0.91, height * 0.80);
-  pg.vertex(width, height * 0.73);
-  pg.vertex(width, height);
-  pg.vertex(0, height);
+  pg.vertex(0, GAME_H * 0.82);
+  pg.vertex(GAME_W * 0.08, GAME_H * 0.73);
+  pg.vertex(GAME_W * 0.16, GAME_H * 0.79);
+  pg.vertex(GAME_W * 0.24, GAME_H * 0.67);
+  pg.vertex(GAME_W * 0.33, GAME_H * 0.78);
+  pg.vertex(GAME_W * 0.42, GAME_H * 0.69);
+  pg.vertex(GAME_W * 0.52, GAME_H * 0.83);
+  pg.vertex(GAME_W * 0.61, GAME_H * 0.70);
+  pg.vertex(GAME_W * 0.71, GAME_H * 0.81);
+  pg.vertex(GAME_W * 0.81, GAME_H * 0.69);
+  pg.vertex(GAME_W * 0.91, GAME_H * 0.80);
+  pg.vertex(GAME_W, GAME_H * 0.73);
+  pg.vertex(GAME_W, GAME_H);
+  pg.vertex(0, GAME_H);
   pg.endShape(CLOSE);
 
   pg.push();
-  pg.translate(width * 0.67, height * 0.52);
+  pg.translate(GAME_W * 0.67, GAME_H * 0.52);
   pg.fill(9, 9, 15);
   pg.rect(-36, 95, 170, 170);
   pg.rect(18, 18, 32, 247);
@@ -222,37 +234,38 @@ function buildMenuBgBuffer() {
 
 function buildIntroSkyBuffer() {
   if (introSkyBuffer) introSkyBuffer.remove();
-  introSkyBuffer = createGraphics(width, height);
+  introSkyBuffer = createGraphics(GAME_W, GAME_H);
   let pg = introSkyBuffer;
 
-  for (let y = 0; y < height; y++) {
-    let t = map(y, 0, height, 0, 1);
+  for (let y = 0; y < GAME_H; y++) {
+    let t = map(y, 0, GAME_H, 0, 1);
     let c1 = color(17, 15, 31);
     let c2 = color(48, 61, 72);
     let c3 = color(84, 90, 88);
     let c = t < 0.58 ? lerpColor(c1, c2, t / 0.58) : lerpColor(c2, c3, (t - 0.58) / 0.42);
     pg.stroke(c);
-    pg.line(0, y, width, y);
+    pg.line(0, y, GAME_W, y);
   }
   pg.noStroke();
   pg.fill(220, 240, 255, 18);
-  pg.ellipse(width * 0.72, 110, 180, 120);
+  pg.ellipse(GAME_W * 0.72, 110, 180, 120);
 }
 
 function buildVignetteBuffer() {
   if (vignetteBuffer) vignetteBuffer.remove();
-  vignetteBuffer = createGraphics(width, height);
+  vignetteBuffer = createGraphics(GAME_W, GAME_H);
   let pg = vignetteBuffer;
   pg.noFill();
   for (let i = 0; i < 78; i++) {
     pg.stroke(0, 0, 0, 3);
-    pg.rect(-i, -i, width + i * 2, height + i * 2);
+    pg.rect(-i, -i, GAME_W + i * 2, GAME_H + i * 2);
   }
   pg.noStroke();
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  updateGameScale();
 
   town4Sprite = town4Sprite.get(162, 0, 1118, 677)
   traderSprite = npcSprites.get(40, 0, 240, 240);
@@ -262,8 +275,8 @@ function setup() {
 
   for (let i = 0; i < 80; i++) {
     stars.push({
-      x: random(width),
-      y: random(height * 0.55),
+      x: random(GAME_W),
+      y: random(GAME_H * 0.55),
       size: random(1, 2.8),
       alpha: random(60, 170),
       speed: random(0.002, 0.01)
@@ -272,8 +285,8 @@ function setup() {
 
   for (let i = 0; i < 35; i++) {
     particles.push({
-      x: random(width),
-      y: random(height),
+      x: random(GAME_W),
+      y: random(GAME_H),
       size: random(2, 4),
       speedX: random(-0.12, 0.12),
       speedY: random(-0.22, -0.04),
@@ -297,8 +310,8 @@ function setup() {
     gameState = "menu"
     updateUI();
   })
-  musicButton.size(300, 100);
-  musicButton.position((width / 2) - 150, (height / 2) - 50);
+  musicButton.size(300 * scaleFactor, 100 * scaleFactor);
+  musicButton.position(toScreenX(GAME_W / 2) - 150 * scaleFactor, toScreenY(GAME_H / 2) - 50 * scaleFactor);
   skipDialogueButton = createMusicButton("Skip Dialogue", 0, 0, function() {
     diaIndex = 0;
     nextDiaLine = 0;
@@ -308,8 +321,8 @@ function setup() {
     updateUI();
   })
   skipDialogueButton.hide();
-  skipDialogueButton.size(200, 80);
-  skipDialogueButton.position((width / 2) - 100, (height / 2) - 40)
+  skipDialogueButton.size(200 * scaleFactor, 80 * scaleFactor);
+  skipDialogueButton.position(toScreenX(GAME_W / 2) - 100 * scaleFactor, toScreenY(GAME_H / 2) - 40 * scaleFactor)
 
   startButton = createMainMenuButton("Start", 0, 0, function() {
     gameState = "poem";
@@ -326,7 +339,7 @@ function setup() {
     updateUI();
   });
 
-  retryButton = createRetryButton("Retry", width * 0.4, height * 0.66, function () {
+  retryButton = createRetryButton("Retry", toScreenX(GAME_W * 0.4), toScreenY(GAME_H * 0.66), function () {
     gameState = "menu";
     mouseReleased = false;
     retryScreenOpacity = 0;
@@ -365,7 +378,7 @@ function setup() {
 
   backButton = createButton("Back");
   backButton.size(98, 40);
-  backButton.position(26, 22);
+  backButton.position(toScreenX(26), toScreenY(22));
   styleSecondaryButton(backButton);
   backButton.mousePressed(function() {
     if (isPaused && pauseSubScreen === "settings") {
@@ -396,7 +409,7 @@ function setup() {
 
 pauseMenuButton = createButton("☰");
 pauseMenuButton.size(44, 44);
-pauseMenuButton.position(26, 22);
+pauseMenuButton.position(toScreenX(26), toScreenY(22));
 styleSecondaryButton(pauseMenuButton);
 pauseMenuButton.style("font-size", "22px");
 pauseMenuButton.mousePressed(function() {
@@ -443,7 +456,7 @@ layoutPauseButtons();
   // Open Level 1 in the same tab so gameplay stays in one site flow.
   level1DevButton = createButton("Level 1 (dev)");
   level1DevButton.size(168, 38);
-  level1DevButton.position(width - 184, 98);
+  level1DevButton.position(toScreenX(GAME_W - 184), toScreenY(98));
   styleSecondaryButton(level1DevButton);
   level1DevButton.mousePressed(function() {
     let path = window.location.pathname.indexOf("index.html") >= 0
@@ -456,7 +469,7 @@ layoutPauseButtons();
 
   testLevelButton = createButton("Test Level");
   testLevelButton.size(168, 38);
-  testLevelButton.position(width - 184, 144);
+  testLevelButton.position(toScreenX(GAME_W - 184), toScreenY(144));
   styleSecondaryButton(testLevelButton);
   testLevelButton.mousePressed(function() {
     let path = window.location.pathname.indexOf("index.html") >= 0
@@ -469,7 +482,7 @@ layoutPauseButtons();
 
   bossLevelButton = createButton("Boss Level");
   bossLevelButton.size(168, 38);
-  bossLevelButton.position(width - 184, 190);
+  bossLevelButton.position(toScreenX(GAME_W - 184), toScreenY(190));
   styleSecondaryButton(bossLevelButton);
   bossLevelButton.mousePressed(function() {
     let path = window.location.pathname.indexOf("index.html") >= 0
@@ -516,6 +529,12 @@ layoutPauseButtons();
   }
 }
 
+function updateGameScale() {
+  scaleFactor = min(windowWidth / GAME_W, windowHeight / GAME_H);
+  scaleOffsetX = (windowWidth - GAME_W * scaleFactor) / 2;
+  scaleOffsetY = (windowHeight - GAME_H * scaleFactor) / 2;
+}
+
 function preload() {
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
   fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
@@ -560,6 +579,10 @@ sfxTrack = [
 }
 
 function draw() {
+
+  background(0);
+  translate(scaleOffsetX, scaleOffsetY);
+  scale(scaleFactor);
   
   frames++;
   if (frames > 9) frames = 0;
@@ -580,7 +603,7 @@ function draw() {
     drawIntroLevelScreen();
     if (fadingFromBlack) {
       fill(0, 0, 0, blackFadeCount)
-      rect(0, 0, width, height)
+      rect(0, 0, GAME_W, GAME_H)
       blackFadeCount -= 5;
       if (blackFadeCount <= 0) {
         fadingFromBlack = false;
@@ -597,12 +620,13 @@ function draw() {
       cameraX = 0;
       gameState = "introForest"
       worldWidth = 4960
+      forestEnemiesSpawned = false;
       updateUI();
     }
   } else if (gameState === "introForest") {
 
     drawIntroForestScreen();
-    if (playerX > 4960 - (width / 6)) {
+    if (playerX > 4960 - (GAME_W / 6)) {
       worldWidth = 4400
       playerX = 10
       cameraX = 0;
@@ -630,7 +654,7 @@ function draw() {
   }
   if (entityWaitingForMouse == 0 && mouseIsPressed) {
     if (isDialogue) {
-      if (mouseY > (height * 3) / 4) {
+      if (gameMY() > (GAME_H * 3) / 4) {
         entityWaitingForMouse = 1;
       }
     } else {
@@ -650,10 +674,25 @@ function draw() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  updateGameScale();
   buildMenuBgBuffer();
   buildIntroSkyBuffer();
   buildVignetteBuffer();
+  groundY = (GAME_H * 3 / 4) - drawSize;
+  if (playerY > groundY) playerY = groundY;
   layoutMenuButtons();
+  layoutClassButtons();
+  layoutVolumeSliders();
+  layoutPauseButtons();
+  musicButton.size(300 * scaleFactor, 100 * scaleFactor);
+  musicButton.position(toScreenX(GAME_W / 2) - 150 * scaleFactor, toScreenY(GAME_H / 2) - 50 * scaleFactor);
+  skipDialogueButton.size(200 * scaleFactor, 80 * scaleFactor);
+  skipDialogueButton.position(toScreenX(GAME_W / 2) - 100 * scaleFactor, toScreenY(GAME_H / 2) - 40 * scaleFactor);
+  level1DevButton.position(toScreenX(GAME_W - 184), toScreenY(98));
+  testLevelButton.position(toScreenX(GAME_W - 184), toScreenY(144));
+  bossLevelButton.position(toScreenX(GAME_W - 184), toScreenY(190));
+  backButton.position(toScreenX(26), toScreenY(22));
+  pauseMenuButton.position(toScreenX(26), toScreenY(22));
 }
 
 function keyPressed() {
@@ -681,7 +720,7 @@ function keyPressed() {
   }
 
   if ((key === 'q' || key === 'Q') && attackType === "" && !isCharging) {
-    if (magic <= 0 || stamina <= 0) {
+    if (magic <= 15 || stamina <= 15) {
       return;
     }
     if (selectedClass === "Mage") {
@@ -757,7 +796,7 @@ function initIntroLevel(skipDialogue = false) {
     isDialogue = true;
   }
   // init player
-  groundY = (height * 3 / 4) - drawSize;
+  groundY = (GAME_H * 3 / 4) - drawSize;
   playerX = 200;
   playerY = groundY;
   velY = 0;
@@ -851,15 +890,15 @@ function drawBar(x, y, w, h, val, maxVal, col, label) {
 function drawFantasyBackground() {
   image(menuBgBuffer, 0, 0);
   drawStars();
-  drawMistLayer(height - 70, 210, 0.12);
-  drawMistLayer(height - 22, 260, 0.20);
+  drawMistLayer(GAME_H - 70, 210, 0.12);
+  drawMistLayer(GAME_H - 22, 260, 0.20);
   drawParticles();
   image(vignetteBuffer, 0, 0);
 }
 
 function drawSkyGradient() {
-  for (let y = 0; y < height; y++) {
-    let t = map(y, 0, height, 0, 1);
+  for (let y = 0; y < GAME_H; y++) {
+    let t = map(y, 0, GAME_H, 0, 1);
 
     let top = color(13, 14, 28);
     let mid = color(28, 24, 48);
@@ -873,14 +912,14 @@ function drawSkyGradient() {
     }
 
     stroke(c);
-    line(0, y, width, y);
+    line(0, y, GAME_W, y);
   }
   noStroke();
 }
 
 function drawBackGlow() {
-  let glowX = width * 0.75;
-  let glowY = height * 0.25;
+  let glowX = GAME_W * 0.75;
+  let glowY = GAME_H * 0.25;
 
   noStroke();
 
@@ -905,49 +944,49 @@ function drawStars() {
 function drawBackMountains() {
   fill(25, 22, 42);
   beginShape();
-  vertex(0, height * 0.72);
-  vertex(width * 0.06, height * 0.63);
-  vertex(width * 0.14, height * 0.68);
-  vertex(width * 0.22, height * 0.56);
-  vertex(width * 0.30, height * 0.65);
-  vertex(width * 0.39, height * 0.50);
-  vertex(width * 0.49, height * 0.63);
-  vertex(width * 0.58, height * 0.52);
-  vertex(width * 0.68, height * 0.66);
-  vertex(width * 0.78, height * 0.56);
-  vertex(width * 0.88, height * 0.67);
-  vertex(width, height * 0.58);
-  vertex(width, height);
-  vertex(0, height);
+  vertex(0, GAME_H * 0.72);
+  vertex(GAME_W * 0.06, GAME_H * 0.63);
+  vertex(GAME_W * 0.14, GAME_H * 0.68);
+  vertex(GAME_W * 0.22, GAME_H * 0.56);
+  vertex(GAME_W * 0.30, GAME_H * 0.65);
+  vertex(GAME_W * 0.39, GAME_H * 0.50);
+  vertex(GAME_W * 0.49, GAME_H * 0.63);
+  vertex(GAME_W * 0.58, GAME_H * 0.52);
+  vertex(GAME_W * 0.68, GAME_H * 0.66);
+  vertex(GAME_W * 0.78, GAME_H * 0.56);
+  vertex(GAME_W * 0.88, GAME_H * 0.67);
+  vertex(GAME_W, GAME_H * 0.58);
+  vertex(GAME_W, GAME_H);
+  vertex(0, GAME_H);
   endShape(CLOSE);
 }
 
 function drawMidMountains() {
   fill(17, 15, 28);
   beginShape();
-  vertex(0, height * 0.82);
-  vertex(width * 0.08, height * 0.73);
-  vertex(width * 0.16, height * 0.79);
-  vertex(width * 0.24, height * 0.67);
-  vertex(width * 0.33, height * 0.78);
-  vertex(width * 0.42, height * 0.69);
-  vertex(width * 0.52, height * 0.83);
-  vertex(width * 0.61, height * 0.70);
-  vertex(width * 0.71, height * 0.81);
-  vertex(width * 0.81, height * 0.69);
-  vertex(width * 0.91, height * 0.80);
-  vertex(width, height * 0.73);
-  vertex(width, height);
-  vertex(0, height);
+  vertex(0, GAME_H * 0.82);
+  vertex(GAME_W * 0.08, GAME_H * 0.73);
+  vertex(GAME_W * 0.16, GAME_H * 0.79);
+  vertex(GAME_W * 0.24, GAME_H * 0.67);
+  vertex(GAME_W * 0.33, GAME_H * 0.78);
+  vertex(GAME_W * 0.42, GAME_H * 0.69);
+  vertex(GAME_W * 0.52, GAME_H * 0.83);
+  vertex(GAME_W * 0.61, GAME_H * 0.70);
+  vertex(GAME_W * 0.71, GAME_H * 0.81);
+  vertex(GAME_W * 0.81, GAME_H * 0.69);
+  vertex(GAME_W * 0.91, GAME_H * 0.80);
+  vertex(GAME_W, GAME_H * 0.73);
+  vertex(GAME_W, GAME_H);
+  vertex(0, GAME_H);
   endShape(CLOSE);
 }
 
 function drawCastleSilhouette() {
   push();
 
-  let s = height / 900;
-  let castleX = width * 0.67;
-  let castleY = height * 0.52;
+  let s = GAME_H / 900;
+  let castleX = GAME_W * 0.67;
+  let castleY = GAME_H * 0.52;
 
   translate(castleX, castleY);
   fill(9, 9, 15);
@@ -976,7 +1015,7 @@ function drawMistLayer(yBase, h, driftSpeed) {
   noStroke();
 
   for (let i = -2; i < 9; i++) {
-    let offset = (frameCount * driftSpeed + i * 140) % (width + 280) - 140;
+    let offset = (frameCount * driftSpeed + i * 140) % (GAME_W + 280) - 140;
     fill(220, 225, 255, 16);
     ellipse(offset, yBase, 250, h * 0.65);
     ellipse(offset + 55, yBase - 20, 210, h * 0.55);
@@ -996,12 +1035,12 @@ function drawParticles() {
     p.y += p.speedY;
 
     if (p.y < -10) {
-      p.y = height + random(10, 80);
-      p.x = random(width);
+      p.y = GAME_H + random(10, 80);
+      p.x = random(GAME_W);
     }
 
-    if (p.x < -10) p.x = width + 10;
-    if (p.x > width + 10) p.x = -10;
+    if (p.x < -10) p.x = GAME_W + 10;
+    if (p.x > GAME_W + 10) p.x = -10;
   }
 }
 
@@ -1009,7 +1048,7 @@ function drawForegroundVignette() {
   noFill();
   for (let i = 0; i < 78; i++) {
     stroke(0, 0, 0, 3);
-    rect(-i, -i, width + i * 2, height + i * 2);
+    rect(-i, -i, GAME_W + i * 2, GAME_H + i * 2);
   }
   noStroke();
 }
@@ -1023,7 +1062,7 @@ function drawRetryScreen() {
   
   retryScreenOpacity += 2;
   retryScreenOpacity = constrain(retryScreenOpacity, 0, 140);
-  rect(0, 0, width, height);
+  rect(0, 0, GAME_W, GAME_H);
 
   for (i = 0; i < entityCount; i++) {
     if (entities[i].isAlive() && entities[i].constructor === Enemy) {
@@ -1037,9 +1076,9 @@ function drawRetryScreen() {
   }
   fill(245);
   textSize(100);
-  text("YOU DIED", width / 2 - textSize() * 2.55, height * 0.33);
-  retryButton.position(width / 2 - (width * 0.1) / 2, height * 0.66);
-  retryButton.size(width * 0.1, height * 0.1);
+  text("YOU DIED", GAME_W / 2 - textSize() * 2.55, GAME_H * 0.33);
+  retryButton.position(toScreenX(GAME_W * 0.45), toScreenY(GAME_H * 0.66));
+  retryButton.size(GAME_W * 0.1 * scaleFactor, GAME_H * 0.1 * scaleFactor);
 }
 
 function drawMenuPanel() {
@@ -1084,8 +1123,8 @@ function drawMenuDecoration(x, y, w, h) {
 function drawSubScreenPanel() {
   let panelW = 590;
   let panelH = 470;
-  let panelX = width * 0.5 - panelW * 0.5;
-  let panelY = height * 0.04;
+  let panelX = GAME_W * 0.5 - panelW * 0.5;
+  let panelY = GAME_H * 0.04;
 
   fill(7, 8, 12, 176);
   rect(panelX, panelY, panelW, panelH, 18);
@@ -1143,20 +1182,19 @@ function layoutMenuButtons() {
   let gap = menuPanel.h * 0.152;
   let buttonX = menuPanel.x + (menuPanel.w - buttonW) / 2;
 
-  startButton.size(buttonW, buttonH);
-  settingsButton.size(buttonW, buttonH);
-  quitButton.size(buttonW, buttonH);
+  startButton.size(buttonW * scaleFactor, buttonH * scaleFactor);
+  settingsButton.size(buttonW * scaleFactor, buttonH * scaleFactor);
+  quitButton.size(buttonW * scaleFactor, buttonH * scaleFactor);
 
-  startButton.position(buttonX, startY);
-  settingsButton.position(buttonX, startY + gap);
-  quitButton.position(buttonX, startY + gap * 2);
+  startButton.position(toScreenX(buttonX), toScreenY(startY));
+  settingsButton.position(toScreenX(buttonX), toScreenY(startY + gap));
+  quitButton.position(toScreenX(buttonX), toScreenY(startY + gap * 2));
 }
 
 function layoutVolumeSliders() {
-  let sliderW = 220;
-  let sliderX = width / 2 - sliderW / 2;
+  let sliderW = 220 * scaleFactor;
 
-  let panelY = height * 0.04;
+  let panelY = GAME_H * 0.04;
   let panelH = 470;
   let startY = panelY + panelH * 0.55;
   let gap = panelH * 0.11;
@@ -1165,13 +1203,13 @@ function layoutVolumeSliders() {
   musicVolumeSlider.size(sliderW);
   sfxVolumeSlider.size(sliderW);
 
-  masterVolumeSlider.position(sliderX, startY);
-  musicVolumeSlider.position(sliderX,  startY + gap);
-  sfxVolumeSlider.position(sliderX,    startY + gap * 2);
+  masterVolumeSlider.position(toScreenX(GAME_W / 2) - sliderW / 2, toScreenY(startY));
+  musicVolumeSlider.position(toScreenX(GAME_W / 2) - sliderW / 2,  toScreenY(startY + gap));
+  sfxVolumeSlider.position(toScreenX(GAME_W / 2) - sliderW / 2,    toScreenY(startY + gap * 2));
 }
 
 function volumeSliderY(index) {
-  let panelY = height * 0.04;
+  let panelY = GAME_H * 0.04;
   let panelH = 470
   return panelY + panelH * 0.55 + index * panelH * 0.11;
 }
@@ -1179,21 +1217,23 @@ function volumeSliderY(index) {
 function layoutClassButtons() {
   let panelW = 590;
   let panelH = 470;
-  let panelX = width * 0.5 - panelW * 0.5;
-  let panelY = height * 0.04;
+  let panelX = GAME_W * 0.5 - panelW * 0.5;
+  let panelY = GAME_H * 0.04;
 
   let titleY = panelY + panelH * 0.18;
   let descY  = panelY + panelH * 0.82;
   let midY   = (titleY + descY) / 2;
 
-  mageButton.position(panelX + panelW / 2 - 100, midY - 72);
-  meleeButton.position(panelX + panelW / 2 - 100, midY + 10);
+  mageButton.size(200 * scaleFactor, 62 * scaleFactor);
+  meleeButton.size(200 * scaleFactor, 62 * scaleFactor);
+  mageButton.position(toScreenX(panelX + panelW / 2 - 100), toScreenY(midY - 72));
+  meleeButton.position(toScreenX(panelX + panelW / 2 - 100), toScreenY(midY + 10));
 }
 
 function createMusicButton(label, x, y, action) {
   let button = createButton(label);
   button.size(300, 100);
-  button.position((width / 2) - (150), (height / 2) - 50);
+  button.position(toScreenX(GAME_W / 2 - 150), toScreenY(GAME_H / 2 - 50));
   styleMainButton(button);
   button.mousePressed(action);
   return button;
@@ -1318,11 +1358,11 @@ function updateUI() {
     } else {
       pauseMenuButton.show();
       level1DevButton.show();
-      level1DevButton.position(width - 184, 98);
+      level1DevButton.position(toScreenX(GAME_W - 184), toScreenY(98));
       testLevelButton.show();
-      testLevelButton.position(width - 184, 144);
+      testLevelButton.position(toScreenX(GAME_W - 184), toScreenY(144));
       bossLevelButton.show();
-      bossLevelButton.position(width - 184, 190);
+      bossLevelButton.position(toScreenX(GAME_W - 184), toScreenY(190));
       }
   } else if (gameState === "settings") {
     backButton.show();
@@ -1350,12 +1390,12 @@ function drawPoemScreen() {
   lineLength = 60;
   for (let x of poemLines) {
 
-    textHeight = printByWord(x, width / 2, textHeight, lineLength, 15);
+    textHeight = printByWord(x, GAME_W / 2, textHeight, lineLength, 15);
     textHeight += 10;
 
   }
   fill(100, 100, 100);
-  text("Click to continue", width / 2, height - 60)
+  text("Click to continue", GAME_W / 2, GAME_H - 60)
   if (mouseIsPressed) {
 
     if (mouseReleased) {
@@ -1398,32 +1438,32 @@ function drawSettingsScreen() {
   textFont("Georgia");
   textStyle(BOLD);
   textSize(34);
-  text("Settings", width / 2, height * 0.04 + 470 * 0.20);
+  text("Settings", GAME_W / 2, GAME_H * 0.04 + 470 * 0.20);
 
   textStyle(NORMAL);
   textSize(22);
   fill(214, 214, 226);
-  text("Volume", width / 2, height * 0.04 + 470 * 0.40);
+  text("Volume", GAME_W / 2, GAME_H * 0.04 + 470 * 0.40);
 
   textSize(16);
   textAlign(CENTER, BOTTOM);
-  text("Main",  width / 2, volumeSliderY(0) - 4);
-  text("Music", width / 2, volumeSliderY(1) - 4);
-  text("SFX",   width / 2, volumeSliderY(2) - 4);
+  text("Main",  GAME_W / 2, volumeSliderY(0) - 4);
+  text("Music", GAME_W / 2, volumeSliderY(1) - 4);
+  text("SFX",   GAME_W / 2, volumeSliderY(2) - 4);
 
   textAlign(CENTER, CENTER);
   textSize(16);
-  
+
   text("Main: "  + masterVolumeSlider.value() +
       "   Music: " + musicVolumeSlider.value() +
       "   SFX: "   + sfxVolumeSlider.value(),
-      width / 2, volumeSliderY(2) + 470 * 0.11);
+      GAME_W / 2, volumeSliderY(2) + 470 * 0.11);
 }
 
 function drawPauseScreen() {
   // dim
   fill(0, 0, 0, 140);
-  rect(0, 0, width, height);
+  rect(0, 0, GAME_W, GAME_H);
 
   if (pauseSubScreen === "main") {
     drawSubScreenPanel();
@@ -1433,7 +1473,7 @@ function drawPauseScreen() {
     textFont("Georgia");
     textStyle(BOLD);
     textSize(34);
-    text("Paused", width / 2, height * 0.04 + 470 * 0.20);
+    text("Paused", GAME_W / 2, GAME_H * 0.04 + 470 * 0.20);
     textStyle(NORMAL);
   } else if (pauseSubScreen === "settings") {
     drawSettingsScreen();
@@ -1441,11 +1481,10 @@ function drawPauseScreen() {
 }
 
 function layoutPauseButtons() {
-  let buttonW = 220;
-  let buttonH = 50;
-  let buttonX = width / 2 - buttonW / 2;
+  let buttonW = 220 * scaleFactor;
+  let buttonH = 50 * scaleFactor;
 
-  let panelY = height * 0.04;
+  let panelY = GAME_H * 0.04;
   let panelH = 470;
   let startY = panelY + panelH * 0.40;
   let gap    = panelH * 0.15;
@@ -1454,9 +1493,9 @@ function layoutPauseButtons() {
   pauseSettingsButton.size(buttonW, buttonH);
   pauseQuitButton.size(buttonW, buttonH);
 
-  pauseResumeButton.position(buttonX, startY);
-  pauseSettingsButton.position(buttonX, startY + gap);
-  pauseQuitButton.position(buttonX, startY + gap * 2);
+  pauseResumeButton.position(toScreenX(GAME_W / 2) - buttonW / 2, toScreenY(startY));
+  pauseSettingsButton.position(toScreenX(GAME_W / 2) - buttonW / 2, toScreenY(startY + gap));
+  pauseQuitButton.position(toScreenX(GAME_W / 2) - buttonW / 2, toScreenY(startY + gap * 2));
 }
 
 function drawQuitScreen() {
@@ -1507,10 +1546,13 @@ function drawLevelUpdates() {
   
 
   if (!isDialogue) {
-    if (!introEnemiesSpawned) {
-      introEnemiesSpawned = true;
+    if (!forestEnemiesSpawned && gameState === "introForest") {
+      forestEnemiesSpawned = true;
+      spawnEnemy("sml", "right-ish");
       spawnEnemy("sml", "right");
-      spawnEnemy("med", "left");
+      spawnEnemy("sml", "left");
+      spawnEnemy("med", "middle");
+
     }
     updatePlayer();
     updateMageProjectiles();
@@ -1543,14 +1585,34 @@ function drawIntroLevelScreen() {
 
 function drawIntroForestScreen() {
   drawLevelUpdates();
-  
+
   drawIntroForest();
   drawPlayer();
   drawMageProjectiles();
   drawIntroTopUI();
   drawHUD();
+  drawEnemyCounter();
   if (isDialogue) drawIntroDialogueBox();
   frameCalls();
+}
+
+function drawEnemyCounter() {
+  let panelW = 140;
+  let panelH = 38;
+  let x = GAME_W / 2 - panelW / 2;
+  let y = 18;
+
+  fill(10, 12, 18, 190);
+  rect(x, y, panelW, panelH, 10);
+
+  fill(255, 255, 255, 10);
+  rect(x + 3, y + 3, panelW - 6, panelH - 6, 8);
+
+  textAlign(CENTER, CENTER);
+  textFont("Georgia");
+  textSize(14);
+  fill(240, 240, 246);
+  text("Goblins Alive: " + enemiesAlive, GAME_W / 2, y + panelH / 2);
 }
 
 function drawTownLevel() {
@@ -1580,23 +1642,6 @@ function drawTownLevel() {
 
 }
 
-function windowResized() {
-  let minW = 960;
-  let minH = 540;
-
-  resizeCanvas(max(windowWidth, minW), max(windowHeight, minH));
-
-  groundY = (height * 3 / 4) - drawSize;
-  if (playerY > groundY) playerY = groundY;
-  layoutMenuButtons();
-  layoutClassButtons();
-  level1DevButton.position(width - 184, 98);
-  testLevelButton.position(width - 184, 144);
-  bossLevelButton.position(width - 184, 190);
-  layoutVolumeSliders();
-  musicButton.position((width / 2) - 150, (height / 2) - 50);
-  layoutPauseButtons();
-}
 
 function updatePlayer() {
   let moving = false;
@@ -1630,7 +1675,7 @@ function updatePlayer() {
   }
 
   // camera follows player, clamped to world
-  cameraX = constrain(playerX - width / 2, 0, worldWidth - width);
+  cameraX = constrain(playerX - GAME_W / 2, 0, worldWidth - GAME_W);
 
   // advance attack animation
   if (attackType !== "") {
@@ -1649,6 +1694,9 @@ function updatePlayer() {
   if (isCharging && selectedClass === "Mage") {
     chargeTime = min(chargeTime + 1, maxChargeTime);
     magic = max(0, magic - 0.15);
+    if (maxChargeTime == chargeTime) {
+      magic = 0;
+    }
     if (magic <= 0) {
       fireHeavyMageProjectile();
       isCharging = false;
@@ -1660,11 +1708,11 @@ function updatePlayer() {
   if (!isCharging) {
     if (selectedClass === "Mage") {
       let prev = magic;
-      magic = min(maxMagic, magic + 0.07);
+      magic = min(maxMagic, magic + 0.03);
       if (prev < maxMagic && magic >= maxMagic && sfxBarFull) sfxBarFull.play();
     } else {
       let prev = stamina;
-      stamina = min(maxStamina, stamina + 0.15);
+      stamina = min(maxStamina, stamina + 0.06);
       if (prev < maxStamina && stamina >= maxStamina && sfxBarFull) sfxBarFull.play();
     }
   }
@@ -1804,7 +1852,7 @@ function spawnLightMeleeAttack() {
   attackFrame = 0;
   attackTimer = 0;
   sfxLightMelee.play();
-  stamina = max(0, stamina - 9);
+  stamina = max(0, stamina - 15);
 }
 
 function spawnHeavyMeleeAttack() {
@@ -1824,7 +1872,7 @@ function spawnHeavyMeleeAttack() {
   attackFrame = 0;
   attackTimer = 0;
   sfxHeavyMelee.play();
-  stamina = max(0, stamina - 18);
+  stamina = max(0, stamina - 45);
 }
 
 function updateMeleeAttacks() {
@@ -1851,7 +1899,7 @@ function updateMageProjectiles() {
     // heavy pierces all — do NOT break, let it continue through every enemy
 
     let screenX = p.x - cameraX;
-    let offScreen = screenX < -120 || screenX > width + 120;
+    let offScreen = screenX < -120 || screenX > GAME_W + 120;
     let expired = p.distTraveled >= p.maxDist;
     if (offScreen || expired) mageProjectiles.splice(i, 1);
   }
@@ -1934,12 +1982,16 @@ function drawChargeEffect() {
 }
 
 function mousePressed() {
+  if (gameState == "introForest") {
+    console.log(mouseX);
+    console.log(mouseY);
+  }
   if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
   if (isPaused) return;
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;
   // ignore clicks where the Level 1 (dev) button sits (below objective panel)
-  if (mouseX > width - 200 && mouseY > 88 && mouseY < 234) return;
+  if (gameMX() > GAME_W - 200 && gameMY() > 88 && gameMY() < 234) return;
   if (!mouseReleased) return;
   if (stamina <= 0 || magic <= 0) return;
   if (isCharging) return;
@@ -2007,13 +2059,14 @@ function drawIntroForest() {
   //drawIntroPondArea();
   //drawIntroForestArea();
   //drawIntroVillagePathArea();
-  //2489, 570 - forest dimensions
+  // -22 offsets the sprite up so its grass line aligns with groundY + drawSize = GAME_H * 3/4
+  const forestSpriteY = -100;
   if (playerX < 3200) {
-    image(forestSprite, 0, 0)
+    image(forestSprite, 0, forestSpriteY)
   }
-  
+
   if (playerX > 1600) {
-    image(forestSprite, 2489, 0)
+    image(forestSprite, 2489, forestSpriteY)
   }
   drawAmbientFireflies();
   drawIntroStaticGrass();
@@ -2043,8 +2096,8 @@ function drawIntroParallaxBack() {
   vertex(p1 + 1080, 360);
   vertex(p1 + 1400, 260);
   vertex(p1 + 1800, 350);
-  vertex(p1 + 1800, height);
-  vertex(p1, height);
+  vertex(p1 + 1800, GAME_H);
+  vertex(p1, GAME_H);
   endShape(CLOSE);
 
   fill(18, 20, 28, 210);
@@ -2058,8 +2111,8 @@ function drawIntroParallaxBack() {
   vertex(p2 + 1120, 410);
   vertex(p2 + 1420, 310);
   vertex(p2 + 1760, 410);
-  vertex(p2 + 1760, height);
-  vertex(p2, height);
+  vertex(p2 + 1760, GAME_H);
+  vertex(p2, GAME_H);
   endShape(CLOSE);
 
   pop();
@@ -2067,13 +2120,13 @@ function drawIntroParallaxBack() {
 
 function drawIntroGround() {
   noStroke();
-  let gY = (3 * height) / 4;
+  let gY = (3 * GAME_H) / 4;
 
   fill(42, 54, 40);
-  rect(0, gY, worldWidth, (height * 19) / 80);
+  rect(0, gY, worldWidth, (GAME_H * 19) / 80);
 
   fill(26, 33, 27);
-  rect(0, (7 * height) / 8, worldWidth, (height) / 8);
+  rect(0, (7 * GAME_H) / 8, worldWidth, GAME_H / 8);
 
   fill(60, 82, 59);
   ellipse(270, gY - 17, 560, 125);
@@ -2084,7 +2137,7 @@ function drawIntroGround() {
 
 function drawIntroPondArea() {
   noStroke();
-  let gY = (3 * height) / 4;
+  let gY = (3 * GAME_H) / 4;
 
   fill(48, 63, 44);
   ellipse(320, gY - 25, 360, 115);
@@ -2128,7 +2181,7 @@ function drawGrassClump(x, y, s) {
 }
 
 function drawIntroForestArea() {
-  let gY = (3 * height) / 4;
+  let gY = (3 * GAME_H) / 4;
   for (let i = 0; i < 24; i++) {
     let tx = 760 + i * 68;
     let sway = sin(frameCount * 0.01 + i) * 2;
@@ -2154,7 +2207,7 @@ function drawIntroForestArea() {
 }
 
 function drawIntroVillagePathArea() {
-  let gY = (3 * height) / 4;
+  let gY = (3 * GAME_H) / 4;
   fill(130, 112, 84);
   rect(1880, gY - 27, 300, 23, 9);
 
@@ -2183,9 +2236,9 @@ function drawAmbientFireflies() {
 }
 
 function drawIntroStaticGrass() {
-  let gY = (3 * height) / 4;
+  let gY = (3 * GAME_H) / 4;
   noStroke();
-  for (let i = 0; i < width + 32; i += 24) {
+  for (let i = 0; i < GAME_W + 32; i += 24) {
     let gx = i - 8;
     let h1 = 16 + (i % 5) * 2;
     let h2 = 20 + (i % 7);
@@ -2205,7 +2258,7 @@ function drawIntroStaticGrass() {
 function drawIntroTopUI() {
   let panelW = 220;
   let panelH = 90;
-  let x = width - panelW - 22;
+  let x = GAME_W - panelW - 22;
   let y = 25;
 
   fill(10, 12, 18, 190);
@@ -2226,9 +2279,9 @@ function drawIntroTopUI() {
 }
 
 function drawIntroDialogueBox() {
-  let boxX = width / 4;
-  let boxY = height - 153;
-  let boxW = width / 2;
+  let boxX = GAME_W / 4;
+  let boxY = GAME_H - 153;
+  let boxW = GAME_W / 2;
   let boxH = 120;
 
   fill(9, 11, 18, 210);
