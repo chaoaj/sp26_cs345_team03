@@ -2,6 +2,13 @@ let retryScreenOpacity = 140;
 
 let gameState = "music";
 let selectedClass = "";
+let canScreenshot = true;
+let frameWait = 0;
+
+let town1Sprite;
+let town2Sprite;
+let town3Sprite;
+let town4Sprite;
 
 let fadingFromBlack = false;
 let blackFadeCount = 500;
@@ -247,6 +254,7 @@ function buildVignetteBuffer() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
 
+  town4Sprite = town4Sprite.get(162, 0, 1118, 677)
   traderSprite = npcSprites.get(40, 0, 240, 240);
   mageSprite = mageSprite.get(40, 0, 240, 240);
   meleeSprite = meleeSprite.get(40, 0, 240, 240);
@@ -392,7 +400,7 @@ pauseMenuButton.position(26, 22);
 styleSecondaryButton(pauseMenuButton);
 pauseMenuButton.style("font-size", "22px");
 pauseMenuButton.mousePressed(function() {
-  if (gameState === "introLevel" || gameState === "introForest") {
+  if (gameState === "introLevel" || gameState === "introForest" || gameState === "townLevel") {
     isPaused = true;
     pauseSubScreen = "main";
     mouseReleased = false;
@@ -438,9 +446,9 @@ layoutPauseButtons();
   level1DevButton.position(width - 184, 98);
   styleSecondaryButton(level1DevButton);
   level1DevButton.mousePressed(function() {
-    let path = window.location.pathname.indexOf("dev/index.html") >= 0
+    let path = window.location.pathname.indexOf("index.html") >= 0
       ? "levels/your_level.html"
-      : "dev/levels/your_level.html";
+      : "levels/your_level.html";
     let classParam = selectedClass === "Mage" ? "Mage" : "Melee";
     window.location.href = path + "?class=" + encodeURIComponent(classParam);
   });
@@ -451,7 +459,7 @@ layoutPauseButtons();
   testLevelButton.position(width - 184, 144);
   styleSecondaryButton(testLevelButton);
   testLevelButton.mousePressed(function() {
-    let path = window.location.pathname.indexOf("dev/index.html") >= 0
+    let path = window.location.pathname.indexOf("index.html") >= 0
       ? "levels/test_level.html"
       : "dev/levels/test_level.html";
     let classParam = selectedClass === "Mage" ? "Mage" : "Melee";
@@ -464,7 +472,7 @@ layoutPauseButtons();
   bossLevelButton.position(width - 184, 190);
   styleSecondaryButton(bossLevelButton);
   bossLevelButton.mousePressed(function() {
-    let path = window.location.pathname.indexOf("dev/index.html") >= 0
+    let path = window.location.pathname.indexOf("index.html") >= 0
       ? "levels/boss_level.html"
       : "dev/levels/boss_level.html";
     let classParam = selectedClass === "Mage" ? "Mage" : "Melee";
@@ -516,6 +524,10 @@ function preload() {
   mageSprite = loadImage("sprites/sprint2/mage_class_320x320.png");
   meleeSprite = loadImage("sprites/sprint2/melee_class_320x320.png");
   forestSprite = loadImage("sprites/sprint5/forest.png")
+  town1Sprite = loadImage("sprites/sprint5/townLevel1.png");
+  town2Sprite = loadImage("sprites/sprint5/townLevel2.png");
+  town3Sprite = loadImage("sprites/sprint5/townLevel3.png");
+  town4Sprite = loadImage("sprites/sprint5/townLevel4.png");
   
   sfxLightMelee = loadSound("sounds/light swing.mp3");
   sfxHeavyMelee = loadSound("sounds/heavy swing.mp3");
@@ -551,9 +563,10 @@ function draw() {
   
   frames++;
   if (frames > 9) frames = 0;
+  if (frames == 9 && frameWait > 0) frameWait--;
 
   
-  if (gameState !== "introLevel" && gameState !== "introForest") drawFantasyBackground();
+  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") drawFantasyBackground();
 
   if (gameState === "menu") {
     drawMenuPanel();
@@ -580,7 +593,7 @@ function draw() {
       }
     }
     if (playerX > 2000) {
-      playerX = 20
+      playerX = 10;
       cameraX = 0;
       gameState = "introForest"
       worldWidth = 4960
@@ -589,6 +602,24 @@ function draw() {
   } else if (gameState === "introForest") {
 
     drawIntroForestScreen();
+    if (playerX > 4960 - (width / 6)) {
+      worldWidth = 4400
+      playerX = 10
+      cameraX = 0;
+      gameState = "townLevel"
+      updateUI();
+    }
+
+  } else if (gameState === "townLevel") {
+
+    drawTownLevel();
+    /*if (mouseIsPressed && frameWait <= 0) {
+      frameWait = 10;
+      let picture1;
+      picture1 = get(0, 0, width, (height * 1) / 1);
+      picture1.save("screenshot" + playerX + ".png");
+      playerX += width;
+    }*/
 
   } else if (gameState === "settings") {
     drawSettingsScreen();
@@ -626,7 +657,7 @@ function windowResized() {
 }
 
 function keyPressed() {
-  if (gameState !== "introLevel" && gameState !== "introForest") return;
+  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
 
   if (keyCode === ESCAPE) {
     if(!isPaused) {
@@ -679,7 +710,7 @@ function initMusic() {
 }
 
 function keyReleased() {
-  if (gameState !== "introLevel" && gameState !== "introForest") return;
+  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
   if ((key === 'q' || key === 'Q') && isCharging && selectedClass === "Mage") {
     fireHeavyMageProjectile();
     isCharging = false;
@@ -1272,7 +1303,7 @@ function updateUI() {
     backButton.show();
     mageButton.show();
     meleeButton.show();
-  } else if (gameState === "introLevel" || gameState === "introForest") {
+  } else if (gameState === "introLevel" || gameState === "introForest" || gameState === "townLevel") {
     if (isPaused) {
       if (pauseSubScreen === "main") {
         pauseResumeButton.show();
@@ -1522,6 +1553,33 @@ function drawIntroForestScreen() {
   frameCalls();
 }
 
+function drawTownLevel() {
+  drawLevelUpdates();
+  drawVillageWorld();
+  push();
+  translate(-cameraX, 0);
+  if (playerX < 2560) {
+    image(town1Sprite, 0, 0) 
+  }
+  if (playerX < 3840) {
+    image(town2Sprite, 1280, 0)
+  }
+  if (playerX > 1500) {
+    image(town3Sprite, 2560, 0)
+    image(town4Sprite, 3840, 0)
+  }
+  pop();
+  //drawVillageWorld();
+  //drawVillageSky();
+  drawPlayer();
+  drawMageProjectiles();
+  drawIntroTopUI();
+  drawHUD();
+  if (isDialogue) drawIntroDialogueBox();
+  frameCalls();
+
+}
+
 function windowResized() {
   let minW = 960;
   let minH = 540;
@@ -1634,6 +1692,7 @@ function getAtkInfo(type) {
 
 function drawPlayer() {
   if (!spriteSheet) return;
+  //if (gameState === "townLevel") return;
 
   let screenX = playerX - cameraX;
   let sx = currentFrame * frameWidth;
@@ -1875,7 +1934,7 @@ function drawChargeEffect() {
 }
 
 function mousePressed() {
-  if (gameState !== "introLevel" && gameState !== "introForest") return;
+  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
   if (isPaused) return;
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;
@@ -1945,8 +2004,8 @@ function drawIntroForest() {
   push();
   translate(-cameraX, 0);
   drawIntroGround();
-  drawIntroPondArea();
-  drawIntroForestArea();
+  //drawIntroPondArea();
+  //drawIntroForestArea();
   //drawIntroVillagePathArea();
   //2489, 570 - forest dimensions
   if (playerX < 3200) {
