@@ -5,6 +5,8 @@ let diaIndex = 0;
 let nextDiaLine = 0;
 let currDiaFile;
 let leftRight;
+let helpDia = ["#???: HEEEEELLLLLLLPP!!!!", "~"]
+
 
 // indicates whether or not there should be a image loaded for speaker
 // false means there should be an image loaded
@@ -12,10 +14,16 @@ let showDiaSprite = false;
 
 function initDiaFile(person) {
     if (person === "fairy") {
+        isDialogue = true;
         currDiaFile = fairyDia;
         printDialogue(currDiaFile[0], 0);
     } else if (person === "trader") {
+        isDialogue = true;
         currDiaFile = traderDia;
+        printDialogue(currDiaFile[0], 0);
+    } else if (person === "help") {
+        isDialogue = true;
+        currDiaFile = helpDia;
         printDialogue(currDiaFile[0], 0);
     }
     
@@ -48,7 +56,7 @@ function printDialogue(line, lineNumber) {
                 showDiaSprite = false;
                 dialogueSprite = traderSprite;
             } else {
-                showDiaSprite = false;
+                showDiaSprite = true;
             }
             if (personTalking === "Player") {
                 dialogue = new Dialogue(splitLine[1], "", false);
