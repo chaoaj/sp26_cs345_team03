@@ -1,6 +1,3 @@
-let this_guy;
-let this_guy2;
-let this_guy3;
 let retryScreenOpacity = 140;
 
 let gameState = "music";
@@ -133,6 +130,9 @@ let sfxWalking;
 let sfxBarFull;
 let sfxTextLoop;
 let wasWalking = false;
+
+//enemy spawning
+let introEnemiesSpawned = false;
 
 function buildMenuBgBuffer() {
   if (menuBgBuffer) menuBgBuffer.remove();
@@ -331,6 +331,7 @@ function setup() {
   mageButton = createMainMenuButton("Mage", 0, 0, function() {
     selectedClass = "Mage";
     initIntroLevel();
+    introEnemiesSpawned = false;
     fadingFromBlack = true;
     gameState = "introLevel";
     musicIntro.stop();
@@ -508,9 +509,6 @@ layoutPauseButtons();
 }
 
 function preload() {
-  //this_guy = new Enemy("sml");
-  //this_guy2 = new Enemy("med");
-  //this_guy3 = new Enemy("boss");
   poemLines = loadStrings("./libraries/data/intro_poem.txt");
   fairyDia = loadStrings("./libraries/data/dialogue/fairy.txt");
   traderDia = loadStrings("./libraries/data/dialogue/trader.txt");
@@ -766,17 +764,7 @@ function initIntroLevel(skipDialogue = false) {
   if (sfxWalking && sfxWalking.isPlaying()) sfxWalking.stop();
   if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
 
-  // Recreate intro enemies whenever intro level is entered.
-  //this_guy = new Enemy("sml");
-  //this_guy2 = new Enemy("med");
-  //this_guy3 = new Enemy("boss");
-
-  // Returning from Level 1 should be immediately playable with enemies present.
-  if (skipDialogue) {
-    this_guy.spawnedIn = true;
-    this_guy2.spawnedIn = true;
-    this_guy3.spawnedIn = true;
-  }
+  
 }
 
 function decrementHealth() {
@@ -1488,10 +1476,10 @@ function drawLevelUpdates() {
   
 
   if (!isDialogue) {
-    if (this_guy && this_guy2 && this_guy3 && !this_guy.spawnedIn && !this_guy2.spawnedIn && !this_guy3.spawnedIn) {
-      this_guy.spawnedIn = true;
-      this_guy2.spawnedIn = true;
-      this_guy3.spawnedIn = true;
+    if (!introEnemiesSpawned) {
+      introEnemiesSpawned = true;
+      spawnEnemy("sml", "right");
+      spawnEnemy("med", "left");
     }
     updatePlayer();
     updateMageProjectiles();
