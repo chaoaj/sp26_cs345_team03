@@ -375,6 +375,7 @@ class Enemy extends Entity {
                         this.sprite_info["atk_sprite_size"][0],
                         this.sprite_info["atk_sprite_size"][0]
                     )
+                    enemyHitboxer(thisEnemyX, this.y - this.sprite_info["atk_pos_delta"], this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], this.type, this.enemy_frame, 1)
                 } else {
                     push();
                     translate(thisEnemyX + (400 * this.sprite_info["scale"]), this.y);
@@ -391,6 +392,7 @@ class Enemy extends Entity {
                         this.sprite_info["atk_sprite_size"][0]
                     )
                     pop();
+                    enemyHitboxer(thisEnemyX, this.y - this.sprite_info["atk_pos_delta"], this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], this.type, this.enemy_frame, -1)            
                 }
                 if (this.enemy_frame > this.sprite_info["atk_end"]) {
                     this.enemy_frame = this.sprite_info["atk_start"];
@@ -487,7 +489,7 @@ class Enemy extends Entity {
 
         //check if should jump
         //150 is arbitrary, i wanted to add in some sort of delay to the jumping or else it looked weird
-        if ((this.y > playerY + 150) && this.onGround && this.ableToJump) {
+        if ((this.y > playerY + 120 + floor(random(60))) && this.onGround && this.ableToJump) {
             this.jump();
         }
     }
@@ -531,6 +533,46 @@ class Enemy extends Entity {
     }
 
 
+}
+
+function enemyHitboxer(enemyX, enemyY, enemySize, enemyType, enemyFrame, direction) {
+    //if (Math.abs(playerX - cameraX - enemyX) > 30) 
+    if (enemyType === "sml") {
+        if (floor(enemyFrame) === 2) {
+            sizeCutX = enemyX
+            if (direction == -1) {
+                sizeCutX += (enemySize / 6);
+            }
+            sizeCutY = (enemySize / 4)
+            fill(255, 0, 0)
+            rect(sizeCutX, enemyY, enemySize - (enemySize / 6), enemySize / 4)
+            sizeCutX = 0
+            if (direction == 1) {
+                sizeCutX = ((enemySize * 3) / 4)
+            }
+            rect(enemyX + sizeCutX, enemyY, (enemySize - ((enemySize * 3) / 4)), enemySize)
+        } else if (floor(enemyFrame) === 3) {
+            sizeCutY = (enemySize / 4);
+            sizeCutX = (3 * enemySize) / 4;
+            fill(255, 0, 0)
+            if (direction == 1) {
+                rect(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - sizeCutX, enemySize - sizeCutY)
+            } else {
+                rect(enemyX, enemyY + sizeCutY, enemySize - sizeCutX, enemySize - sizeCutY)
+            }
+        }
+    } else if (enemyType === "med") {
+        if (floor(enemyFrame > 1 && enemyFrame < 9)) {
+            sizeCutY = ((5 * enemySize) / 29);
+            sizeCutX = (3 * enemySize) / 4;
+            fill(255, 0, 0)
+            if (direction == 1) {
+                rect(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - sizeCutX, ((2 * enemySize) / 3) - sizeCutY)
+            } else {
+                rect(enemyX - (enemySize / 3), enemyY + sizeCutY, enemySize - sizeCutX, ((2 * enemySize) / 3) - sizeCutY)
+            }
+        }
+    }
 }
 
 function spawnEnemy(type, side = "right") {

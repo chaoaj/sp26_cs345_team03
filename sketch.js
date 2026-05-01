@@ -620,7 +620,7 @@ function draw() {
         blackFadeCount = 500;
       }
     }
-    if (playerX > worldWidth - 100) {
+    if (playerX > worldWidth / 5) {
       playerX = 10;
       cameraX = 0;
       gameState = "introForest"
@@ -637,12 +637,17 @@ function draw() {
       initDiaFile("help")
       musicDream.stop()
       musicEnemies.loop()
+      spawnEnemy("sml", "right-ish");
+      spawnEnemy("sml", "right");
+      spawnEnemy("sml", "left");
+      spawnEnemy("med", "middle");
     }
     if (playerX > 4960 - (width / 6)) {
       worldWidth = 4400
       playerX = 10
       cameraX = 0;
       gameState = "townLevel"
+      groundY = (GAME_H * 7 / 8) - drawSize - (GAME_H / 16);
       updateUI();
     }
 
@@ -738,7 +743,7 @@ function keyPressed() {
     return;
   }
 
-  if ((key === 'q' || key === 'Q') && attackType === "" && !isCharging) {
+  if ((key === 'q' || key === 'Q' || key === 'k' || key === 'K') && attackType === "" && !isCharging) {
     if (magic <= 15 || stamina <= 15) {
       return;
     }
@@ -749,6 +754,10 @@ function keyPressed() {
       spawnHeavyMeleeAttack();
     }
     return;
+  } else if ((key === 'j' || key === 'J') && selectedClass === "Mage" && magic > 0) {
+    spawnLightMageProjectile();
+    sfxLightMage.play();
+    magic = max(0, magic - 9);
   }
 
   if (key === ' ' || keyCode === ENTER) {
@@ -769,7 +778,7 @@ function initMusic() {
 
 function keyReleased() {
   if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
-  if ((key === 'q' || key === 'Q') && isCharging && selectedClass === "Mage") {
+  if ((key === 'q' || key === 'Q' || key === 'k' || key === 'K') && isCharging && selectedClass === "Mage") {
     fireHeavyMageProjectile();
     isCharging = false;
     chargeTime = 0;
@@ -1564,14 +1573,14 @@ function drawLevelUpdates() {
   
 
   if (!isDialogue) {
-    if (!forestEnemiesSpawned && gameState === "introForest") {
+    /*if (!forestEnemiesSpawned && gameState === "introForest") {
       forestEnemiesSpawned = true;
       spawnEnemy("sml", "right-ish");
       spawnEnemy("sml", "right");
       spawnEnemy("sml", "left");
       spawnEnemy("med", "middle");
 
-    }
+    }*/
     updatePlayer();
     updateMageProjectiles();
     updateMeleeAttacks();
