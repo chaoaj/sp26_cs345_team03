@@ -55,6 +55,23 @@ let mouseReleased = false;
 //1 means something is waiting and the mouse has been clicked
 let entityWaitingForMouse = -1;
 
+// keybind system
+// each binding is { type: "key" | "mouse" | "none", code?, button?, label }
+let keybinds;
+let keyMappingButton;
+let rebindingAction = null;
+let rebindArmed = false;  // becomes true after the input that triggered rebind is released
+let keyMapInputArmed = false; // becomes true after the click that opened keymap is released
+let prevMouseIsPressedState = false;
+
+const KEYMAP_ACTIONS = [
+  { id: "jump",        label: "Jump"         },
+  { id: "moveLeft",    label: "Move Left"    },
+  { id: "moveRight",   label: "Move Right"   },
+  { id: "heavyAttack", label: "Heavy Attack" },
+  { id: "lightAttack", label: "Light Attack" }
+];
+
 let isDialogue = false;
 
 let mageButton;
@@ -384,9 +401,23 @@ function setup() {
   backButton.position(toScreenX(26), toScreenY(22));
   styleSecondaryButton(backButton);
   backButton.mousePressed(function() {
+    if (isPaused && pauseSubScreen === "keymap") {
+      pauseSubScreen = "settings";
+      rebindingAction = null;
+      mouseReleased = false;
+      updateUI();
+      return;
+    }
     if (isPaused && pauseSubScreen === "settings") {
       pauseSubScreen = "main";
       mouseReleased = false;
+      updateUI();
+      return;
+    }
+    if (gameState === "keyMapping") {
+      rebindingAction = null;
+      mouseReleased = false;
+      gameState = "settings";
       updateUI();
       return;
     }
@@ -499,6 +530,14 @@ layoutPauseButtons();
   masterVolumeSlider = createSlider(0, 100, 50);
   musicVolumeSlider  = createSlider(0, 100, 50);
   sfxVolumeSlider    = createSlider(0, 100, 50);
+
+  keybinds = getDefaultKeybinds();
+
+  keyMappingButton = createButton("Key Mapping");
+  styleSecondaryButton(keyMappingButton);
+  keyMappingButton.mousePressed(enterKeyMapping);
+  keyMappingButton.hide();
+
   layoutVolumeSliders();
 
   buildMenuBgBuffer();
@@ -627,7 +666,7 @@ function draw() {
       worldWidth = 4960
       forestEnemiesSpawned = false;
       updateUI();
-    }    
+    }
   } else if (gameState === "introForest") {
 
     drawIntroForestScreen();
@@ -659,6 +698,8 @@ function draw() {
 
   } else if (gameState === "settings") {
     drawSettingsScreen();
+  } else if (gameState === "keyMapping") {
+    drawKeyMappingScreen();
   } else if (gameState === "quit") {
     drawQuitScreen();
   } else if (gameState === "deathScreen") {
@@ -682,9 +723,28 @@ function draw() {
 
   let sfxMul = sfxVolumeSlider.value() / 100;
   for (let t of sfxTrack) t.sound.setVolume(t.base * sfxMul);
+
+  // arm rebind/keymap capture once the triggering click is released
+  if (!mouseIsPressed) {
+    keyMapInputArmed = true;
+    if (rebindingAction) rebindArmed = true;
+  }
+
+  // mouse release edge: lets a mouse-bound heavy attack fire on release for the mage charge
+  if (prevMouseIsPressedState && !mouseIsPressed) {
+    if (selectedClass === "Mage" && isCharging) {
+      let b = keybinds && keybinds.heavyAttack;
+      if (b && b.type === "mouse") {
+        fireHeavyMageProjectile();
+        isCharging = false;
+        chargeTime = 0;
+      }
+    }
+  }
+  prevMouseIsPressedState = mouseIsPressed;
+
   fill(0, 0, 0)
   rect(-(width / 20), 0, (width / 20), height)
-  //rect((width - (width / 4)), 0, (width / 20), height)
   rect((width - (width / 4)), 0, (width / 20), height)
 }
 
@@ -715,14 +775,36 @@ function windowResized() {
 }
 
 function keyPressed() {
+  // 1. rebind capture takes priority over everything else
+  if (rebindingAction) {
+    if (keyCode === ESCAPE) {
+      rebindingAction = null;
+      return false;
+    }
+    if (!rebindArmed) return false;
+    setBinding(rebindingAction, makeKeyBinding(keyCode));
+    rebindingAction = null;
+    return false;
+  }
+
+  // 2. ESC backs out of the keymap screen when reached from the main menu
+  if (keyCode === ESCAPE && gameState === "keyMapping" && !isPaused) {
+    gameState = "settings";
+    updateUI();
+    return false;
+  }
+
+  // gameplay-only past this point
   if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
 
   if (keyCode === ESCAPE) {
-    if(!isPaused) {
+    if (!isPaused) {
       isPaused = true;
-      pauseSubScreen = "main"
+      pauseSubScreen = "main";
+    } else if (pauseSubScreen === "keymap") {
+      pauseSubScreen = "settings";
     } else if (pauseSubScreen === "settings") {
-      pauseSubScreen = "main"
+      pauseSubScreen = "main";
     } else {
       isPaused = false;
       pauseSnapshot = null;
@@ -733,21 +815,18 @@ function keyPressed() {
 
   if (isPaused) return;
 
-  if ((key === 'w' || key === 'W') && onGround) {
-    velY = jumpForce;
+  if (keyPressMatches("jump", keyCode)) {
+    tryJump();
     return;
   }
 
-  if ((key === 'q' || key === 'Q') && attackType === "" && !isCharging) {
-    if (magic <= 15 || stamina <= 15) {
-      return;
-    }
-    if (selectedClass === "Mage") {
-      isCharging = true;
-      chargeTime = 0;
-    } else {
-      spawnHeavyMeleeAttack();
-    }
+  if (keyPressMatches("heavyAttack", keyCode) && attackType === "" && !isCharging) {
+    triggerHeavyAttack();
+    return;
+  }
+
+  if (keyPressMatches("lightAttack", keyCode)) {
+    triggerLightAttack();
     return;
   }
 
@@ -769,7 +848,7 @@ function initMusic() {
 
 function keyReleased() {
   if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
-  if ((key === 'q' || key === 'Q') && isCharging && selectedClass === "Mage") {
+  if (keyPressMatches("heavyAttack", keyCode) && isCharging && selectedClass === "Mage") {
     fireHeavyMageProjectile();
     isCharging = false;
     chargeTime = 0;
@@ -1224,6 +1303,17 @@ function layoutVolumeSliders() {
   masterVolumeSlider.position(toScreenX(GAME_W / 2) - sliderW / 2, toScreenY(startY));
   musicVolumeSlider.position(toScreenX(GAME_W / 2) - sliderW / 2,  toScreenY(startY + gap));
   sfxVolumeSlider.position(toScreenX(GAME_W / 2) - sliderW / 2,    toScreenY(startY + gap * 2));
+
+  if (keyMappingButton) {
+    let buttonW = 200;
+    let buttonH = 30;
+    let buttonY = startY + gap * 2 + panelH * 0.155;
+    keyMappingButton.size(buttonW * scaleFactor, buttonH * scaleFactor);
+    keyMappingButton.position(
+      toScreenX(GAME_W / 2 - buttonW / 2),
+      toScreenY(buttonY)
+    );
+  }
 }
 
 function volumeSliderY(index) {
@@ -1343,7 +1433,8 @@ function updateUI() {
   bossLevelButton.hide();
   masterVolumeSlider.hide();
   musicVolumeSlider.hide();
-  sfxVolumeSlider.hide();  
+  sfxVolumeSlider.hide();
+  if (keyMappingButton) keyMappingButton.hide();
   mageButton.hide();
   meleeButton.hide();
 
@@ -1372,7 +1463,10 @@ function updateUI() {
         masterVolumeSlider.show();
         musicVolumeSlider.show();
         sfxVolumeSlider.show();
-      } 
+        if (keyMappingButton) keyMappingButton.show();
+      } else if (pauseSubScreen === "keymap") {
+        backButton.show();
+      }
     } else {
       pauseMenuButton.show();
       level1DevButton.show();
@@ -1387,6 +1481,9 @@ function updateUI() {
     masterVolumeSlider.show();
     musicVolumeSlider.show();
     sfxVolumeSlider.show();
+    if (keyMappingButton) keyMappingButton.show();
+  } else if (gameState === "keyMapping") {
+    backButton.show();
   } else if (gameState === "quit") {
     backButton.show();
   } else if (gameState === "deathScreen") {
@@ -1495,6 +1592,8 @@ function drawPauseScreen() {
     textStyle(NORMAL);
   } else if (pauseSubScreen === "settings") {
     drawSettingsScreen();
+  } else if (pauseSubScreen === "keymap") {
+    drawKeyMappingScreen();
   }
 }
 
@@ -1663,8 +1762,8 @@ function drawTownLevel() {
 
 function updatePlayer() {
   let moving = false;
-  if (keyIsDown(68)) { playerX += 5; moving = true; facingLeft = false; } // D
-  if (keyIsDown(65)) { playerX -= 5; moving = true; facingLeft = true; }  // A
+  if (isBindingDown("moveRight")) { playerX += 5; moving = true; facingLeft = false; }
+  if (isBindingDown("moveLeft"))  { playerX -= 5; moving = true; facingLeft = true;  }
 
   // clamp to world bounds (no walking off-screen)
   playerX = constrain(playerX, 0, worldWidth - drawSize);
@@ -2004,6 +2103,14 @@ function mousePressed() {
     console.log(mouseX);
     console.log(mouseY);
   }
+
+  // 1. keymap screen swallows clicks before anything else
+  let inKeyMapping = (gameState === "keyMapping") || (isPaused && pauseSubScreen === "keymap");
+  if (inKeyMapping) {
+    handleKeyMapClick();
+    return;
+  }
+
   if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
   if (isPaused) return;
   // ignore clicks on the back button area (top-left)
@@ -2011,20 +2118,20 @@ function mousePressed() {
   // ignore clicks where the Level 1 (dev) button sits (below objective panel)
   if (gameMX() > GAME_W - 200 && gameMY() > 88 && gameMY() < 234) return;
   if (!mouseReleased) return;
-  if (stamina <= 0 || magic <= 0) return;
-  if (isCharging) return;
-  if (!(isDialogue)) {
-    if (attackType === "") {
-      if (selectedClass === "Mage") {
-        spawnLightMageProjectile();
-        sfxLightMage.play();
-        magic = max(0, magic - 9);
-      } else {
-        spawnLightMeleeAttack();
-      }
-    }
+  if (isDialogue) return;
+
+  if (mousePressMatches("lightAttack", mouseButton)) {
+    triggerLightAttack();
+    return;
   }
-  
+  if (mousePressMatches("heavyAttack", mouseButton)) {
+    if (attackType === "" && !isCharging) triggerHeavyAttack();
+    return;
+  }
+  if (mousePressMatches("jump", mouseButton)) {
+    tryJump();
+    return;
+  }
 }
 
 function updateIntroLevel() {
@@ -2379,4 +2486,307 @@ function printByWord(lineText, x, y, maxLength, textSpace) {
 
     return textY;
 
+}
+
+// ===== keybind system =====
+
+function getDefaultKeybinds() {
+  return {
+    jump:        { type: "key",   code: 87, label: "W" },
+    moveLeft:    { type: "key",   code: 65, label: "A" },
+    moveRight:   { type: "key",   code: 68, label: "D" },
+    heavyAttack: { type: "key",   code: 81, label: "Q" },
+    lightAttack: { type: "mouse", button: LEFT, label: "Left Click" }
+  };
+}
+
+function makeKeyBinding(kc) {
+  return { type: "key", code: kc, label: keyCodeToLabel(kc) };
+}
+
+function makeMouseBinding(btn) {
+  return { type: "mouse", button: btn, label: mouseButtonToLabel(btn) };
+}
+
+function sameBinding(a, b) {
+  if (!a || !b) return false;
+  if (a.type !== b.type) return false;
+  if (a.type === "key")   return a.code === b.code;
+  if (a.type === "mouse") return a.button === b.button;
+  return false;
+}
+
+// assigning a binding to one action clears it from any other action that had it
+function setBinding(action, newBinding) {
+  for (let k in keybinds) {
+    if (k === action) continue;
+    if (sameBinding(keybinds[k], newBinding)) {
+      keybinds[k] = { type: "none", label: "Unbound" };
+    }
+  }
+  keybinds[action] = newBinding;
+}
+
+function keyPressMatches(action, kc) {
+  let b = keybinds && keybinds[action];
+  return !!(b && b.type === "key" && b.code === kc);
+}
+
+function mousePressMatches(action, btn) {
+  let b = keybinds && keybinds[action];
+  return !!(b && b.type === "mouse" && b.button === btn);
+}
+
+function isBindingDown(action) {
+  let b = keybinds && keybinds[action];
+  if (!b) return false;
+  if (b.type === "key")   return keyIsDown(b.code);
+  if (b.type === "mouse") return mouseIsPressed && mouseButton === b.button;
+  return false;
+}
+
+function keyCodeToLabel(kc) {
+  if (kc === 32)  return "Space";
+  if (kc === 13)  return "Enter";
+  if (kc === 9)   return "Tab";
+  if (kc === 8)   return "Backspace";
+  if (kc === 16)  return "Shift";
+  if (kc === 17)  return "Ctrl";
+  if (kc === 18)  return "Alt";
+  if (kc === 37)  return "Left Arrow";
+  if (kc === 38)  return "Up Arrow";
+  if (kc === 39)  return "Right Arrow";
+  if (kc === 40)  return "Down Arrow";
+  if (kc === 27)  return "ESC";
+  if (kc === 191) return "/";
+  if (kc === 190) return ".";
+  if (kc === 188) return ",";
+  if (kc === 189) return "-";
+  if (kc === 187) return "=";
+  if (kc === 186) return ";";
+  if (kc === 222) return "'";
+  if (kc === 219) return "[";
+  if (kc === 221) return "]";
+  if (kc === 220) return "\\";
+  if (kc === 192) return "`";
+  if (kc >= 65 && kc <= 90)  return String.fromCharCode(kc);
+  if (kc >= 48 && kc <= 57)  return String.fromCharCode(kc);
+  if (kc >= 96 && kc <= 105) return "Numpad " + (kc - 96);
+  if (kc >= 112 && kc <= 123) return "F" + (kc - 111);
+  return "Key " + kc;
+}
+
+function mouseButtonToLabel(btn) {
+  if (btn === LEFT)   return "Left Click";
+  if (btn === RIGHT)  return "Right Click";
+  if (btn === CENTER) return "Middle Click";
+  return "Mouse";
+}
+
+// ===== shared action triggers (called from key + mouse handlers) ===========
+
+function tryJump() {
+  if (onGround) velY = jumpForce;
+}
+
+function triggerLightAttack() {
+  if (stamina <= 0 || magic <= 0) return;
+  if (isCharging) return;
+  if (isDialogue) return;
+  if (attackType !== "") return;
+
+  if (selectedClass === "Mage") {
+    spawnLightMageProjectile();
+    sfxLightMage.play();
+    magic = max(0, magic - 9);
+  } else {
+    spawnLightMeleeAttack();
+  }
+}
+
+function triggerHeavyAttack() {
+  if (attackType !== "" || isCharging) return;
+  if (magic <= 15 || stamina <= 15) return;
+
+  if (selectedClass === "Mage") {
+    isCharging = true;
+    chargeTime = 0;
+  } else {
+    spawnHeavyMeleeAttack();
+  }
+}
+
+// ===== keymap screen =======================================================
+
+function enterKeyMapping() {
+  rebindingAction = null;
+  keyMapInputArmed = false;
+  if (isPaused) {
+    pauseSubScreen = "keymap";
+  } else {
+    gameState = "keyMapping";
+  }
+  mouseReleased = false;
+  updateUI();
+}
+
+function startRebind(action) {
+  rebindingAction = action;
+  rebindArmed = false;
+  mouseReleased = false;
+}
+
+function getKeyMapRowRect(index) {
+  let panelW = 590;
+  let panelX = GAME_W * 0.5 - panelW * 0.5;
+  let panelY = GAME_H * 0.04;
+  let panelH = 470;
+  let startY = panelY + panelH * 0.30;
+  let rowH = 42;
+  let rowGap = 8;
+  let rowW = panelW - 80;
+  let rowX = panelX + 40;
+  return { x: rowX, y: startY + index * (rowH + rowGap), w: rowW, h: rowH };
+}
+
+function getKeyMapResetRect() {
+  let panelW = 590;
+  let panelH = 470;
+  let panelX = GAME_W * 0.5 - panelW * 0.5;
+  let panelY = GAME_H * 0.04;
+  let w = 200;
+  let h = 32;
+  return {
+    x: panelX + panelW / 2 - w / 2,
+    y: panelY + panelH - h - 22,
+    w: w,
+    h: h
+  };
+}
+
+function isPointInRect(px, py, r) {
+  return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
+}
+
+function drawKeyMappingScreen() {
+  drawSubScreenPanel();
+
+  let panelY = GAME_H * 0.04;
+  let panelH = 470;
+
+  fill(244, 244, 248);
+  textAlign(CENTER, CENTER);
+  textFont("Georgia");
+  textStyle(BOLD);
+  textSize(32);
+  text("Key Mapping", GAME_W / 2, panelY + panelH * 0.13);
+
+  textStyle(NORMAL);
+  textSize(14);
+  fill(180, 184, 204);
+  if (rebindingAction) {
+    text("Press any key or click a mouse button to bind, ESC to cancel", GAME_W / 2, panelY + panelH * 0.21);
+  } else {
+    text("Click a row to rebind it", GAME_W / 2, panelY + panelH * 0.21);
+  }
+
+  for (let i = 0; i < KEYMAP_ACTIONS.length; i++) {
+    let act = KEYMAP_ACTIONS[i];
+    let r = getKeyMapRowRect(i);
+    let hovering = isPointInRect(gameMX(), gameMY(), r);
+    let isThisRebinding = rebindingAction === act.id;
+
+    noStroke();
+    if (isThisRebinding) {
+      fill(70, 52, 110, 220);
+    } else if (hovering) {
+      fill(40, 42, 58, 220);
+    } else {
+      fill(20, 22, 32, 200);
+    }
+    rect(r.x, r.y, r.w, r.h, 8);
+
+    noFill();
+    if (isThisRebinding) {
+      stroke(220, 200, 255, 140);
+    } else if (hovering) {
+      stroke(210, 215, 240, 70);
+    } else {
+      stroke(180, 184, 220, 32);
+    }
+    strokeWeight(1);
+    rect(r.x, r.y, r.w, r.h, 8);
+    noStroke();
+
+    fill(232, 232, 240);
+    textAlign(LEFT, CENTER);
+    textStyle(NORMAL);
+    textSize(16);
+    text(act.label, r.x + 18, r.y + r.h / 2);
+
+    textAlign(RIGHT, CENTER);
+    if (isThisRebinding) {
+      fill(255, 230, 140);
+      textStyle(ITALIC);
+      textSize(15);
+      text("Press a key or click...", r.x + r.w - 18, r.y + r.h / 2);
+      textStyle(NORMAL);
+    } else {
+      let b = keybinds[act.id];
+      if (b && b.type === "none") {
+        fill(180, 130, 130);
+      } else {
+        fill(220, 222, 232);
+      }
+      textSize(15);
+      text(b ? b.label : "Unbound", r.x + r.w - 18, r.y + r.h / 2);
+    }
+  }
+
+  // reset button
+  let rb = getKeyMapResetRect();
+  let resetHover = isPointInRect(gameMX(), gameMY(), rb);
+  noStroke();
+  fill(resetHover ? color(54, 32, 36, 230) : color(28, 18, 22, 190));
+  rect(rb.x, rb.y, rb.w, rb.h, 8);
+  noFill();
+  stroke(220, 140, 150, resetHover ? 110 : 60);
+  strokeWeight(1);
+  rect(rb.x, rb.y, rb.w, rb.h, 8);
+  noStroke();
+  fill(240, 222, 226);
+  textAlign(CENTER, CENTER);
+  textStyle(NORMAL);
+  textSize(14);
+  text("Reset to Defaults", rb.x + rb.w / 2, rb.y + rb.h / 2);
+}
+
+function handleKeyMapClick() {
+  // ignore clicks on the back button area (top-left) — backButton handles itself
+  if (mouseX < 140 && mouseY < 70) return;
+
+  // capturing for an active rebind
+  if (rebindingAction) {
+    if (!rebindArmed) return;
+    setBinding(rebindingAction, makeMouseBinding(mouseButton));
+    rebindingAction = null;
+    return;
+  }
+
+  // wait until the click that opened the screen has been released
+  if (!keyMapInputArmed) return;
+
+  for (let i = 0; i < KEYMAP_ACTIONS.length; i++) {
+    let r = getKeyMapRowRect(i);
+    if (isPointInRect(gameMX(), gameMY(), r)) {
+      startRebind(KEYMAP_ACTIONS[i].id);
+      return;
+    }
+  }
+
+  let rb = getKeyMapResetRect();
+  if (isPointInRect(gameMX(), gameMY(), rb)) {
+    keybinds = getDefaultKeybinds();
+    rebindingAction = null;
+  }
 }
