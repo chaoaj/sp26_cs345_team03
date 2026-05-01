@@ -627,10 +627,17 @@ function draw() {
       worldWidth = 4960
       forestEnemiesSpawned = false;
       updateUI();
-    }
+    }    
   } else if (gameState === "introForest") {
 
     drawIntroForestScreen();
+    if (!(helped) && playerX > (width / 6)) {
+      helped = true;
+      sfxWalking.stop()
+      initDiaFile("help")
+      musicDream.stop()
+      musicEnemies.loop()
+    }
     if (playerX > 4960 - (width / 6)) {
       worldWidth = 4400
       playerX = 10
@@ -675,6 +682,10 @@ function draw() {
 
   let sfxMul = sfxVolumeSlider.value() / 100;
   for (let t of sfxTrack) t.sound.setVolume(t.base * sfxMul);
+  fill(0, 0, 0)
+  rect(-(width / 20), 0, (width / 20), height)
+  //rect((width - (width / 4)), 0, (width / 20), height)
+  rect((width - (width / 4)), 0, (width / 20), height)
 }
 
 function windowResized() {
@@ -684,6 +695,9 @@ function windowResized() {
   buildIntroSkyBuffer();
   buildVignetteBuffer();
   groundY = (GAME_H * 3 / 4) - drawSize;
+  if (gameState === "townLevel") {
+    groundY = (GAME_H * 5 / 6) - drawSize;
+  }
   if (playerY > groundY) playerY = groundY;
   layoutMenuButtons();
   layoutClassButtons();
