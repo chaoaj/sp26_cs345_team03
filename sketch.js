@@ -1293,7 +1293,7 @@ function layoutVolumeSliders() {
 
   let panelY = GAME_H * 0.04;
   let panelH = 470;
-  let startY = panelY + panelH * 0.55;
+  let startY = panelY + panelH * 0.42;
   let gap = panelH * 0.11;
 
   masterVolumeSlider.size(sliderW);
@@ -1319,7 +1319,7 @@ function layoutVolumeSliders() {
 function volumeSliderY(index) {
   let panelY = GAME_H * 0.04;
   let panelH = 470
-  return panelY + panelH * 0.55 + index * panelH * 0.11;
+  return panelY + panelH * 0.42 + index * panelH * 0.11;
 }
 
 function layoutClassButtons() {
@@ -1553,12 +1553,12 @@ function drawSettingsScreen() {
   textFont("Georgia");
   textStyle(BOLD);
   textSize(34);
-  text("Settings", GAME_W / 2, GAME_H * 0.04 + 470 * 0.20);
+  text("Settings", GAME_W / 2, GAME_H * 0.04 + 470 * 0.13);
 
   textStyle(NORMAL);
   textSize(22);
   fill(214, 214, 226);
-  text("Volume", GAME_W / 2, GAME_H * 0.04 + 470 * 0.40);
+  text("Volume", GAME_W / 2, GAME_H * 0.04 + 470 * 0.27);
 
   textSize(16);
   textAlign(CENTER, BOTTOM);
