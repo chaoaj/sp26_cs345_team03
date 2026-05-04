@@ -20,6 +20,8 @@ let sprintSound;
 let enemyWaves = 0;
 
 let musicEnemies;
+let musicBoss
+let musicTown
 let helped = false;
 
 const GAME_W = 960;
@@ -386,8 +388,9 @@ function setup() {
     introEnemiesSpawned = false;
     fadingFromBlack = true;
     gameState = "introLevel";
-    musicIntro.stop();
-    musicDream.stop();
+    stopMusic();
+    //musicIntro.stop();
+    //musicDream.stop();
     musicDream.loop();
     mouseReleased = false;
     updateUI();
@@ -399,8 +402,9 @@ function setup() {
     initIntroLevel();
     fadingFromBlack = true;
     gameState = "introLevel";
-    musicIntro.stop();
-    musicDream.stop();
+    //musicIntro.stop();
+    //musicDream.stop();
+    stopMusic();
     musicDream.loop();
     mouseReleased = false;
     updateUI();
@@ -435,8 +439,9 @@ function setup() {
     if (gameState === "settings" || gameState === "quit" || gameState === "poem") {
       mouseReleased = false;
       gameState = "menu";
-      musicIntro.stop();
-      musicDream.stop();
+      //musicIntro.stop();
+      //musicDream.stop();
+      stopMusic();
       musicIntro.loop();
     } else if (gameState === "classSelect") {
       mouseReleased = false;
@@ -458,7 +463,7 @@ pauseMenuButton.position(toScreenX(26), toScreenY(22));
 styleSecondaryButton(pauseMenuButton);
 pauseMenuButton.style("font-size", "22px");
 pauseMenuButton.mousePressed(function() {
-  if (gameState === "introLevel" || gameState === "introForest" || gameState === "townLevel") {
+  if (gameState === "introLevel" || gameState === "introForest" || gameState === "townLevel" || gameState === "bossLevel") {
     isPaused = true;
     pauseSubScreen = "main";
     mouseReleased = false;
@@ -489,7 +494,8 @@ pauseQuitButton = createMainMenuButton("Quit", 0, 0, function() {
   sfxAmbience.stop();
   if (sfxWalking && sfxWalking.isPlaying()) sfxWalking.stop();
   if (sfxTextLoop && sfxTextLoop.isPlaying()) sfxTextLoop.stop();
-  musicDream.stop();
+  //musicDream.stop();
+  stopMusic();
   musicIntro.loop();
   mouseReleased = false;
   updateUI();
@@ -571,8 +577,9 @@ layoutPauseButtons();
       fadingFromBlack = true;
       gameState = "introLevel";
       musicButton.hide();
-      musicIntro.stop();
-      musicDream.stop();
+      //musicIntro.stop();
+      //musicDream.stop();
+      stopMusic();
       musicDream.loop();
       mouseReleased = false;
       updateUI();
@@ -608,6 +615,8 @@ function preload() {
   sfxAmbience = loadSound("sounds/forest ambience.mp3");
   musicIntro = loadSound("sounds/music/introScreen.mp3");
   musicDream = loadSound("sounds/music/Dream3.wav");
+  musicBoss = loadSound("sounds/music/BossSong.wav");
+  musicTown = loadSound("sounds/music/townSong.wav");
   musicEnemies = loadSound("sounds/music/fightingEnemies.mp3");
 
   sprintSound = loadSound("sounds/sprintSound.wav");
@@ -619,6 +628,8 @@ function preload() {
   { sound: musicIntro, base: 0.4 },
   { sound: musicDream, base: 0.4 },
   { sound: musicEnemies, base: 1.5 },
+  { sound: musicBoss,  base: 0.4},
+  { sound: musicTown,  base: 0.7}
 ];
 
 sfxTrack = [
@@ -659,7 +670,7 @@ function draw() {
   }
 
   
-  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") drawFantasyBackground();
+  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel" && gameState !== "bossLevel") drawFantasyBackground();
 
   if (gameState === "menu") {
     drawMenuPanel();
@@ -685,13 +696,15 @@ function draw() {
         blackFadeCount = 500;
       }
     }
-    if (playerX > worldWidth - 100) {
+    if (playerX > worldWidth - (worldWidth / 16)) {
       playerX = 10;
       cameraX = 0;
+      
       gameState = "introForest"
       worldWidth = 4960
       forestEnemiesSpawned = false;
       updateUI();
+      //initBossLevel();
     }
   } else if (gameState === "introForest") {
 
@@ -740,8 +753,10 @@ function draw() {
       worldWidth = 4400
       playerX = 10
       cameraX = 0;
+      groundY = (GAME_H * 7 / 8) - drawSize;
+      stopMusic();
+      musicTown.loop()
       gameState = "townLevel"
-      groundY = (GAME_H * 7 / 8) - drawSize - (GAME_H / 16);
       updateUI();
     }
 
@@ -755,6 +770,20 @@ function draw() {
       picture1.save("screenshot" + playerX + ".png");
       playerX += width;
     }*/
+   if (playerX > 4400 - (width / 6)) {
+      initBossLevel();
+   }
+
+  } else if (gameState === "bossLevel") {
+
+    drawBossLevel();
+    if (enemyWaves == 0 && playerX > (width / 6)) {
+      //spawnEnemy("lar", "right");
+      //spawnEnemy("boss", "right");
+      spawnEnemy("boss", "right");
+      //spawnEnemy("lar", "right");
+      enemyWaves++;
+    }
 
   } else if (gameState === "settings") {
     drawSettingsScreen();
@@ -817,8 +846,38 @@ function draw() {
   
 }
 
+function stopMusic() {
+
+  for (let m of musicTrack) {
+    m.sound.stop();
+  }
+
+}
+
+function initBossLevel() {
+
+  worldWidth = 3200
+  playerX = 10;
+  cameraX = 0;
+  //drawSize = 80
+  buildDungeonPlatforms();
+  seedEmbers();
+  groundY = (GAME_H * 13 / 16) - drawSize;
+  stopMusic();
+  musicBoss.loop();
+  gameState = "bossLevel";
+  enemyWaves = 0;
+  updateUI();
+  
+}
+
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  
+  if (gameState === "bossLevel") {
+    buildDungeonPlatforms();
+  }
+  
   updateGameScale();
   buildMenuBgBuffer();
   buildIntroSkyBuffer();
@@ -864,7 +923,7 @@ function keyPressed() {
   }
 
   // gameplay-only past this point
-  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
+  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel" && gameState !== "bossLevel") return;
   testText = keyCode + "";
   if (keyCode === ESCAPE) {
     if (!isPaused) {
@@ -948,7 +1007,7 @@ function initMusic() {
 }
 
 function keyReleased() {
-  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
+  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel" && gameState !== "bossLevel") return;
   if (keyPressMatches("heavyAttack", keyCode) && isCharging && selectedClass === "Mage") {
     fireHeavyMageProjectile();
     isCharging = false;
@@ -1560,7 +1619,7 @@ function updateUI() {
     backButton.show();
     mageButton.show();
     meleeButton.show();
-  } else if (gameState === "introLevel" || gameState === "introForest" || gameState === "townLevel") {
+  } else if (gameState === "introLevel" || gameState === "introForest" || gameState === "townLevel" || gameState === "bossLevel") {
     if (isPaused) {
       if (pauseSubScreen === "main") {
         pauseResumeButton.show();
@@ -1841,6 +1900,18 @@ function drawEnemyCounter() {
   text("Goblins Alive: " + enemiesAlive, GAME_W / 2, y + panelH / 2);
 }
 
+function drawBossLevel() {
+  drawLevelUpdates();
+  if (isPaused) return;
+  bossRoom();
+  drawPlayer();
+  drawMageProjectiles();
+  drawIntroTopUI();
+  drawHUD();
+  if (isDialogue) drawIntroDialogueBox();
+  frameCalls();
+}
+
 function drawTownLevel() {
   drawLevelUpdates();
   if (isPaused) return;
@@ -1876,16 +1947,51 @@ function updatePlayer() {
     if (isBindingDown("moveRight")) { playerX += 5; moving = true; facingLeft = false; }
     if (isBindingDown("moveLeft"))  { playerX -= 5; moving = true; facingLeft = true;  }
   }
-
+  let prevY = playerY;
+  
   // clamp to world bounds (no walking off-screen)
   playerX = constrain(playerX, 0, worldWidth - drawSize);
 
+  
   if (!(sprinting)) {
+    
     velY += gravity;
     playerY += velY;
   
-
-    if (playerY >= groundY) {
+    let playerFootPrev = prevY + playerFootOffset;
+    let playerFootNow = playerY + playerFootOffset;
+    let playerLeft = playerX + 8;
+    let playerRight = playerX + drawSize - 8;
+    if (gameState === "bossLevel") {
+      onGround = false;
+      if (velY >= 0) {
+        for (let p of dungeonPlatforms) {
+          let top = p.y;
+          let overlapsX = playerRight > p.x + 6 && playerLeft < p.x + p.w - 6;
+          if (overlapsX && playerFootPrev <= top + 2 && playerFootNow >= top) {
+            playerY = top - playerFootOffset;
+            velY = 0;
+            onGround = true;
+            if (waitingToLand) {
+              waitingToLand = false
+              playerJustLanded = true;
+            }
+            if (!(canSprint) && !(canFindTimer("sprintCool"))) canSprint = true;
+            break;
+          }
+        }
+      }
+      if (!onGround && playerY >= groundY) {
+        playerY = groundY;
+        velY = 0;
+        onGround = true;
+        if (waitingToLand) {
+          waitingToLand = false
+          playerJustLanded = true;
+        }
+        if (!(canSprint) && !(canFindTimer("sprintCool"))) canSprint = true;
+      }
+    } else if (playerY >= groundY) {
       playerY = groundY;
       velY = 0;
       if (waitingToLand) {
@@ -2236,7 +2342,7 @@ function mousePressed() {
     return;
   }
 
-  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel") return;
+  if (gameState !== "introLevel" && gameState !== "introForest" && gameState !== "townLevel" && gameState !== "bossLevel") return;
   if (isPaused) return;
   // ignore clicks on the back button area (top-left)
   if (mouseX < 140 && mouseY < 70) return;

@@ -263,7 +263,7 @@ class Enemy extends Entity {
 
         this.enemy_frame += 0.13;
 
-        if ((gameState === "introLevel" || gameState === "introForest") && this.spawnedIn) {
+        if ((gameState === "introLevel" || gameState === "introForest" || gameState === "townLevel" || gameState === "bossLevel") && this.spawnedIn) {
             if (this.health > 0) {
                 this.load_enemies();
                 this.moveAndJumpAndGravity();
