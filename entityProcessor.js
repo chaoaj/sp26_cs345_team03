@@ -261,7 +261,11 @@ class Enemy extends Entity {
     //moves frame and then if game is not in the menu then will activate
     frameChange() {
 
-        this.enemy_frame += 0.13;
+        if (this.state === "attack" && this.enemy_frame < 1) {
+            this.enemy_frame += this.attackSpeed
+        } else {
+            this.enemy_frame += 0.13;
+        }
 
         if ((gameState === "introLevel" || gameState === "introForest" || gameState === "townLevel" || gameState === "bossLevel") && this.spawnedIn) {
             if (this.health > 0) {
@@ -300,11 +304,14 @@ class Enemy extends Entity {
                     "walk_pos_delta": -30, //fix walking pos
                     "atk_sprite_size": [400, 400], //w, h of atk
                     "atk_pos_delta": -15, //fix atk pos
-                    "scale": 1 / 6
+                    "scale": 1 / 6,
+                    "stillFrame": 4,
+                    "atkSizeDiff": 80
                 }
                 this.health = 60;
                 this.maxHealth = 60;
                 this.ableToJump = true;
+                this.attackSpeed = 0.07
                 break;
             case "med":
                 this.sprite_info = {
@@ -320,11 +327,14 @@ class Enemy extends Entity {
                     "walk_pos_delta": -5,
                     "atk_sprite_size": [580, 400],
                     "atk_pos_delta": -5,
-                    "scale": 1 / 5
+                    "scale": 1 / 5,
+                    "stillFrame": 0,
+                    "atkSizeDiff": 180
                 }
                 this.health = 100;
                 this.maxHealth = 100;
                 this.ableToJump = true;
+                this.attackSpeed = 0.06
 
                 break;
             case "lar":
@@ -341,11 +351,14 @@ class Enemy extends Entity {
                     "walk_pos_delta": 80,
                     "atk_sprite_size": [800, 700],
                     "atk_pos_delta": 150,
-                    "scale": 1 / 3
+                    "scale": 1 / 3,
+                    "stillFrame": 2,
+                    "atkSizeDiff": 300
                 }
                 this.health = 150;
                 this.maxHealth = 150;
                 this.ableToJump = false;
+                this.attackSpeed = 0.03
                 break;
 
             case "boss":
@@ -362,11 +375,14 @@ class Enemy extends Entity {
                     "walk_pos_delta": 265,
                     "atk_sprite_size": [700, 700],
                     "atk_pos_delta": 265,
-                    "scale": 1 / 2
+                    "scale": 1 / 2,
+                    "stillFrame": 0,
+                    "atkSizeDiff": 0
                 }
                 this.health = 100;
                 this.maxHealth = 100;
                 this.ableToJump = false;
+                this.attackSpeed = 0.01
                 break;
         }
         this.img0 = loadImage(this.sprite_info["sheet"]);
@@ -395,7 +411,7 @@ class Enemy extends Entity {
                     )
                 } else {
                     push();
-                    translate(thisEnemyX + (320 * this.sprite_info["scale"]), this.y); //flips it while maintaining pos
+                    translate(thisEnemyX + (this.sprite_info["sprite_size"][0] * this.sprite_info["scale"]), this.y); //flips it while maintaining pos
                     scale(-1, 1);
                     image(
                         this.img0,
@@ -430,7 +446,7 @@ class Enemy extends Entity {
                     )
                 } else {
                     push();
-                    translate(thisEnemyX + (320 * this.sprite_info["scale"]), this.y); //flips it while maintaining pos
+                    translate(thisEnemyX + (this.sprite_info["sprite_size"][0] * this.sprite_info["scale"]), this.y); //flips it while maintaining pos
                     scale(-1, 1);
                     image(
                         this.img0,
@@ -450,11 +466,12 @@ class Enemy extends Entity {
 
                 break;
             case "attack":
+                //this.timer = 0
                 //bow
                 if (this.direction == "R") {
                     image(
                         this.img1, //image
-                        thisEnemyX, //x
+                        thisEnemyX - ((this.sprite_info["atkSizeDiff"] * this.sprite_info["scale"]) / 2), //x
                         this.y - this.sprite_info["atk_pos_delta"], //y
                         this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], //img h
                         this.sprite_info["atk_sprite_size"][1] * this.sprite_info["scale"], //img w
@@ -463,14 +480,14 @@ class Enemy extends Entity {
                         this.sprite_info["atk_sprite_size"][0],
                         this.sprite_info["atk_sprite_size"][0]
                     )
-                    enemyHitboxer(thisEnemyX, this.y - this.sprite_info["atk_pos_delta"], this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], this.type, this.enemy_frame, 1)
+                    enemyHitboxer(thisEnemyX - ((this.sprite_info["atkSizeDiff"] * this.sprite_info["scale"]) / 2), this.y - this.sprite_info["atk_pos_delta"], this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], this.type, this.enemy_frame, 1)
                 } else {
                     push();
-                    translate(thisEnemyX + (400 * this.sprite_info["scale"]), this.y);
+                    translate(thisEnemyX + (this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"]), this.y);
                     scale(-1, 1);
                     image(
                         this.img1, //image
-                        0, //x
+                        ((this.sprite_info["atkSizeDiff"] * this.sprite_info["scale"]) / 2), //x -1 * (this.sprite_info["atkSizeDiff"] * this.sprite_info["scale"]) / 2
                         0 - this.sprite_info["atk_pos_delta"], //y
                         this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], //img h
                         this.sprite_info["atk_sprite_size"][1] * this.sprite_info["scale"], //img w
@@ -480,7 +497,7 @@ class Enemy extends Entity {
                         this.sprite_info["atk_sprite_size"][0]
                     )
                     pop();
-                    enemyHitboxer(thisEnemyX, this.y - this.sprite_info["atk_pos_delta"], this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], this.type, this.enemy_frame, -1)            
+                    enemyHitboxer(thisEnemyX - ((this.sprite_info["atkSizeDiff"] * this.sprite_info["scale"]) / 2), this.y - this.sprite_info["atk_pos_delta"], this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"], this.type, this.enemy_frame, -1)            
                 }
                 if (this.enemy_frame > this.sprite_info["atk_end"]) {
                     this.enemy_frame = this.sprite_info["atk_start"];
@@ -502,18 +519,37 @@ class Enemy extends Entity {
                 break;
 
             case "still":
-                image(
-                    this.img0, //image
-                    thisEnemyX, //x
-                    this.y - this.sprite_info["walk_pos_delta"], //y
-                    this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
-                    this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
-                    this.sprite_info["sprite_size"][0] * 0, //correct frame
-                    0, //i dont know what this variable is
-                    this.sprite_info["sprite_size"][0], //i dont know
-                    this.sprite_info["sprite_size"][0] //i dont know but it works
-                )
-                break;
+                if (this.direction == "R") {
+                        image(
+                        this.img0, //image
+                        thisEnemyX, //x
+                        this.y - this.sprite_info["walk_pos_delta"], //y
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["stillFrame"], //correct frame
+                        0, //i dont know what this variable is
+                        this.sprite_info["sprite_size"][0], //i dont know
+                        this.sprite_info["sprite_size"][0] //i dont know but it works
+                    )
+                } else {
+                    push();
+                    translate(thisEnemyX + (this.sprite_info["sprite_size"][0] * this.sprite_info["scale"]), this.y);
+                    scale(-1, 1);
+                    image(
+                        this.img0, //image
+                        0, //x
+                        0 - this.sprite_info["walk_pos_delta"], //y
+                        this.sprite_info["sprite_size"][1] * this.sprite_info["scale"], //img h
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["scale"], //img w
+                        this.sprite_info["sprite_size"][0] * this.sprite_info["stillFrame"], //correct frame
+                        0, //i dont know what this variable is
+                        this.sprite_info["sprite_size"][0], //i dont know
+                        this.sprite_info["sprite_size"][0] //i dont know but it works
+                    )
+                    pop();
+                }
+                
+                //break;
 
         }
 
@@ -521,13 +557,18 @@ class Enemy extends Entity {
     }
 
     drawHealthBar() {
+        let ewAtk = this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"];
         let ew = this.sprite_info["sprite_size"][0] * this.sprite_info["scale"];
-        let screenX = this.x - cameraX;
+        let difEw = 0;
+        let screenX = this.x - cameraX + difEw;
         let screenY = this.y - this.sprite_info["walk_pos_delta"];
         let barW = ew;
         let barH = 6;
         let barY = screenY - barH - 4;
         let fillW = (this.health / this.maxHealth) * barW;
+        if (this.direction === "L") {
+            //screenX -= ew / 2
+        }
 
         push();
         noStroke();
@@ -549,7 +590,7 @@ class Enemy extends Entity {
             this.y = groundY;
             this.yVel = 0;
             this.onGround = true;
-            if (this.timer <= 0) {
+            if (this.timer <= 0 && (this.state !== "attack") || floor(this.enemy_frame) < 1) {
                 this.state = "walking";
             }
         } else {
@@ -567,37 +608,96 @@ class Enemy extends Entity {
 
     intelligence() {
         //follow player!
-        if ((playerX - 50) > this.x) {
+        
+        if (this.state === "attack" && floor(this.enemy_frame) >= 1) {
+            //fill(255, 0, 0)
+            //textSize(50)
+            //text("ATTACKING", this.x - cameraX, this.y + 50)
+            return;
+        }
+        let attackDistance = 0
+        if (this.type === "lar") {
+            attackDistance = this.sprite_info["atk_sprite_size"][0] * this.sprite_info["scale"] / 2
+        }
+        //fill(255, 255, 255)
+        //textSize(50)
+        //text(this.state + ": " + floor(this.enemy_frame), this.x - cameraX, this.y + 50)
+        if ((playerX - (drawSize / 2) - attackDistance) > this.x) {
+            if (this.state === "attack" && this.enemy_frame > 0) {
+                this.enemy_frame = 0;
+            }
+            /*if (this.type === "lar" && this.direction === "L") {
+                this.timer = 5
+                this.direction = "R"
+                this.case = "still"
+                return
+            }*/
             if (this.timer <= 0) {
                 this.xVel = this.sprite_info["walk_speed"];
                 this.direction = "R";
                 let stopOrNot = floor(random(1000))
+                if (this.type === "lar") {
+                    stopOrNot = floor(random(3000))
+                }
                 if (stopOrNot < 2) {
-                    this.timer = floor(random(250) - random(100))
+                    if (this.type === "lar") {
+                        this.timer = floor(random(350) - random(300))
+                    } else {
+                        this.timer = floor(random(250) - random(100))
+                    }
                     this.case = "still"
                 } else if (stopOrNot < 10) {
-                    this.timer = floor(random(100) - random(50))
+                    if (this.type === "lar") {
+                        this.timer = floor(random(150) - random(100))
+                    } else {
+                        this.timer = floor(random(100) - random(50))
+                    }
                     this.case = "still"
                 }
             } else {
                 this.timer--;
             }
-        } else if ((playerX + 50) < this.x) {
+        } else if ((playerX + attackDistance + (drawSize / 2)) < this.x) {
+            if (this.state === "attack" && this.enemy_frame > 0) {
+                this.enemy_frame = 0;
+            }
+            /*
+            if (this.type === "lar" && this.direction === "R") {
+                this.timer = 5
+                this.direction = "L"
+                this.case = "still"
+                return
+            }*/
             if (this.timer <= 0) {
                 this.xVel = this.sprite_info["walk_speed"] * -1;
                 this.direction = "L";
                 let stopOrNot = floor(random(1000))
+                if (this.type === "lar") {
+                    stopOrNot = floor(random(3000))
+                }
                 if (stopOrNot < 2) {
-                    this.timer = floor(random(250) - random(100))
+                    if (this.type === "lar") {
+                        this.timer = floor(random(500) - random(250))
+                    } else {
+                        this.timer = floor(random(250) - random(100))
+                    }
                     this.case = "still"
                 } else if (stopOrNot < 10) {
-                    this.timer = floor(random(100) - random(50))
+                    
+                    if (this.type === "lar") {
+                        this.timer = floor(random(200) - random(100))
+                    } else {
+                        this.timer = floor(random(100) - random(50))
+                    }
                     this.case = "still"
                 }
             } else {
                 this.timer--;
             }
         } else {
+            if (this.state !== "attack" && floor(this.enemy_frame) > 1) {
+                this.enemy_frame = 0
+            }
             this.state = "attack";
             this.xVel = 0;
         }
@@ -711,7 +811,7 @@ function enemyHitboxer(enemyX, enemyY, enemySize, enemyType, enemyFrame, directi
         }
     } else if (enemyType === "med") {
         damage = 15
-        if (floor(enemyFrame > 1 && enemyFrame < 9)) {
+        if (enemyFrame > 1 && enemyFrame < 9) {
             sizeCutY = ((5 * enemySize) / 29);
             sizeCutX = (3 * enemySize) / 4;
             fill(255, 0, 0, 100)
@@ -720,6 +820,13 @@ function enemyHitboxer(enemyX, enemyY, enemySize, enemyType, enemyFrame, directi
             } else {
                 enemyHitboxCheck(enemyX - (enemySize / 3), enemyY + sizeCutY, enemySize - sizeCutX, ((2 * enemySize) / 3) - sizeCutY, damage)
             }
+        }
+    } else if (enemyType === "lar") {
+        damage = 30
+        if (enemyFrame > 2 && enemyFrame < 5) {
+            fill(255, 0, 0, 100)
+            //rect(enemyX, enemyY, enemySize, (enemySize * 7) / 8)
+            //enemyHitboxCheck(enemyX, enemyY, enemySize, (enemySize * 7) / 8, damange);
         }
     }
 }

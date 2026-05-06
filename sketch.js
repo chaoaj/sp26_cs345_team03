@@ -694,12 +694,18 @@ function draw() {
         bossLevelButton.show();
         pauseMenuButton.show();
         blackFadeCount = 500;
+        //enemyWaves = 0;
       }
+    }
+    if (enemyWaves == 0 && playerX > worldWidth / 4) {
+      spawnEnemy("lar", "right")
+      //spawnEnemy("med", "right")
+      enemyWaves++;
     }
     if (playerX > worldWidth - (worldWidth / 16)) {
       playerX = 10;
       cameraX = 0;
-      
+      enemyWaves = 0;
       gameState = "introForest"
       worldWidth = 4960
       forestEnemiesSpawned = false;
