@@ -23,6 +23,8 @@ let musicEnemies;
 let musicBoss
 let musicTown
 let helped = false;
+let playerLaunched = false;
+let launchAmount = 0;
 
 const GAME_W = 960;
 const GAME_H = 540;
@@ -1950,8 +1952,34 @@ function drawTownLevel() {
 function updatePlayer() {
   let moving = false;
   if (!(sprinting)) {
-    if (isBindingDown("moveRight")) { playerX += 5; moving = true; facingLeft = false; }
-    if (isBindingDown("moveLeft"))  { playerX -= 5; moving = true; facingLeft = true;  }
+    if (!playerLaunched) {
+      if (isBindingDown("moveRight")) { playerX += 5; moving = true; facingLeft = false; }
+      if (isBindingDown("moveLeft"))  { playerX -= 5; moving = true; facingLeft = true;  }
+    } else {
+      if (!(canSprint) && velY >= 0 && !(canFindTimer("sprintCool"))) {
+        canSprint = true
+      }
+      if (onGround || abs(launchAmount) < 2) {
+        playerLaunched = false;
+      } else {
+        if (isBindingDown("moveRight")) {
+          if (launchAmount > 0) {
+            launchAmount += 0.1
+          } else {
+            launchAmount += 0.5
+          }
+        }
+        if (isBindingDown("moveLeft")) {
+          if (launchAmount > 0) {
+            launchAmount -= 0.5
+          } else {
+            launchAmount -= 0.1
+          }
+        }
+      }
+      moving = true
+      playerX += launchAmount
+    }
   }
   let prevY = playerY;
   

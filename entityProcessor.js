@@ -772,6 +772,18 @@ function enemyHitboxCheck(hitX, hitY, hitW, hitH, damage) {
     hitY + hitH > playerY) {
         if (playerCanBeHurt) {
             decrementHealthBy(damage);
+            if (damage > 25) {
+                velY = -16
+                playerLaunched = true
+                canSprint = false;
+                if ((pPos + drawSize) / 2 > (hitX + hitW) / 2) {
+                    launchAmount = 8
+                } else {
+                    launchAmount = -8
+                }
+                onGround = false;
+                sprinting = false;
+            }
             playerCanBeHurt = false;
             hurtFrame = tenFrames + frames
         }
@@ -826,7 +838,30 @@ function enemyHitboxer(enemyX, enemyY, enemySize, enemyType, enemyFrame, directi
         if (enemyFrame > 2 && enemyFrame < 5) {
             fill(255, 0, 0, 100)
             //rect(enemyX, enemyY, enemySize, (enemySize * 7) / 8)
+            enemyHitboxCheck(enemyX, enemyY, enemySize, (enemySize * 7) / 8, damage)
             //enemyHitboxCheck(enemyX, enemyY, enemySize, (enemySize * 7) / 8, damange);
+        } else if (floor(enemyFrame) == 5) {
+            sizeCutX = enemySize / 4
+            sizeCutY = enemySize / 4
+            fill(255, 0, 0, 100)
+            if (direction == 1) {
+                //rect(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - (sizeCutX), ((enemySize * 7) / 8) - sizeCutY)
+                enemyHitboxCheck(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - (sizeCutX), ((enemySize * 7) / 8) - sizeCutY, damage)
+            } else {
+                //rect(enemyX, enemyY + sizeCutY, enemySize - (sizeCutX), ((enemySize * 7) / 8) - sizeCutY)
+                enemyHitboxCheck(enemyX, enemyY + sizeCutY, enemySize - (sizeCutX), ((enemySize * 7) / 8) - sizeCutY, damage)
+            }
+        } else if (floor(enemyFrame) == 6) {
+            sizeCutX = enemySize / 2
+            sizeCutY = enemySize / 3
+            fill(255, 0, 0, 100)
+            if (direction == 1) {
+                //rect(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - (sizeCutX), ((enemySize * 7) / 8) - sizeCutY)
+                enemyHitboxCheck(enemyX + sizeCutX, enemyY + sizeCutY, enemySize - (sizeCutX), ((enemySize * 7) / 8) - sizeCutY, damage)
+            } else {
+                //rect(enemyX, enemyY + sizeCutY, enemySize - (sizeCutX), ((enemySize * 7) / 8) - sizeCutY)
+                enemyHitboxCheck(enemyX, enemyY + sizeCutY, enemySize - (sizeCutX), ((enemySize * 7) / 8) - sizeCutY, damage)
+            }
         }
     }
 }
